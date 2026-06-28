@@ -1,0 +1,67 @@
+﻿@model LinkUpPro.Application.ViewModels.RegisterViewModel
+
+<h2>Registro</h2>
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<form asp-controller="Account"
+      asp-action="Register"
+      method="post"
+      enctype="multipart/form-data">
+
+    <div>
+        <label>Nombre</label>
+        <input asp-for="FirstName" />
+        <span asp-validation-for="FirstName"></span>
+    </div>
+
+    <div>
+        <label>Apellido</label>
+        <input asp-for="LastName" />
+        <span asp-validation-for="LastName"></span>
+    </div>
+
+    <div>
+        <label>Teléfono</label>
+        <input asp-for="PhoneNumber" />
+        <span asp-validation-for="PhoneNumber"></span>
+    </div>
+
+    <div>
+        <label>Correo</label>
+        <input asp-for="Email" />
+        <span asp-validation-for="Email"></span>
+    </div>
+
+    <div>
+        <label>Foto</label>
+        <input asp-for="ProfilePicture" type="file" />
+    </div>
+
+    <div>
+        <label>Usuario</label>
+        <input asp-for="UserName" />
+        <span asp-validation-for="UserName"></span>
+    </div>
+
+    <div>
+        <label>Contraseña</label>
+        <input asp-for="Password" />
+        <span asp-validation-for="Password"></span>
+    </div>
+
+    <div>
+        <label>Confirmar contraseña</label>
+        <input asp-for="ConfirmPassword" />
+        <span asp-validation-for="ConfirmPassword"></span>
+    </div>
+
+    <button type="submit">
+        Registrarse
+    </button>
+
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

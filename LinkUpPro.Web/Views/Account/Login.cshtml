@@ -1,0 +1,107 @@
+﻿@model LinkUpPro.Application.ViewModels.LoginViewModel
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">
+
+        @TempData["Message"]
+
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">
+
+        @TempData["Error"]
+
+    </div>
+}
+
+<h2>Iniciar Sesión</h2>
+
+<form asp-controller="Account"
+      asp-action="Login"
+      method="post">
+
+    <div>
+
+        <label>Usuario</label>
+
+        <input asp-for="UserName" />
+
+        <span asp-validation-for="UserName"></span>
+
+    </div>
+
+    <div>
+
+        <label>Contraseña</label>
+
+        <input asp-for="Password"
+               id="password" />
+
+        <button type="button"
+                onclick="togglePassword()">
+
+            Mostrar
+
+        </button>
+
+        <span asp-validation-for="Password"></span>
+
+    </div>
+
+    <div>
+
+        <input asp-for="RememberMe" />
+
+        <label>
+            Mantener sesión iniciada
+        </label>
+
+    </div>
+
+    <button type="submit">
+
+        Iniciar sesión
+
+    </button>
+
+</form>
+
+<br>
+
+<a asp-action="Register">
+
+    Registrarse
+
+</a>
+
+<br>
+
+<a asp-action="ForgotPassword">
+
+    Restablecer contraseña
+
+</a>
+
+<script>
+
+    function togglePassword()
+    {
+        var password=
+        document.getElementById(
+        "password");
+
+        password.type=
+        password.type==="password"
+        ? "text"
+        : "password";
+    }
+
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
