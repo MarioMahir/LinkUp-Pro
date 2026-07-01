@@ -10,9 +10,11 @@ namespace LinkUpPro.Application.ViewModels
 {
     public class RegisterViewModel
     {
+        [RegularExpression(@".*\S.*", ErrorMessage = "Nombre inválido")]
         [Required(ErrorMessage = "El nombre es requerido")]
         public string FirstName { get; set; }
 
+        [RegularExpression(@".*\S.*", ErrorMessage = "Apellido inválido")]
         [Required(ErrorMessage = "El apellido es requerido")]
         public string LastName { get; set; }
 
