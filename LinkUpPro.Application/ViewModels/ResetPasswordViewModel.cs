@@ -18,13 +18,8 @@ namespace LinkUpPro.Application.ViewModels
         [DataType(DataType.Password)]
 
         [RegularExpression(
-            @"^(?=.*[a-z])
-        (?=.*[A-Z])
-        (?=.*\d)
-        (?=.*[\W_])
-        .{8,}$",
-            ErrorMessage = "Debe tener mayúscula, minúscula, número y carácter especial")]
-
+        @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$",
+        ErrorMessage = "Debe tener mayúscula, minúscula, número y carácter especial")]
         public string NewPassword { get; set; }
 
         [Required]

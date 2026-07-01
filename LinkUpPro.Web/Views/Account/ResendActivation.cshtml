@@ -1,29 +1,26 @@
-﻿@model LinkUpPro.Application.ViewModels.ForgotPasswordViewModel
+﻿@model LinkUpPro.Application.ViewModels.ResendActivationViewModel
 
 <div class="row justify-content-center mt-5">
     <div class="col-md-5">
-        <h2 class="mb-4 text-center">Restablecer contraseña</h2>
+        <h2 class="mb-4 text-center">Reenviar activación</h2>
 
-        <div asp-validation-summary="All"
-             class="text-danger mb-3">
-        </div>
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-        <form asp-action="ForgotPassword"
-              method="post" 
-              class="card shadow-sm p-4">
-            
-            <p class="text-muted text-center mb-4">Ingresa tu usuario y te enviaremos un enlace para restablecer tu contraseña.</p>
+        <form asp-action="ResendActivation"
+              method="post" class="card shadow-sm p-4">
+
+            <p class="text-muted text-center mb-4">Ingresa tu usuario y te daremos un nuevo enlace para activar tu cuenta.</p>
 
             <div class="mb-4">
                 <label class="form-label fw-bold">Usuario</label>
-                <input asp-for="UserName" class="form-control" />
+                <input asp-for="UserName" class="form-control" placeholder="Introduce tu usuario" />
                 <span asp-validation-for="UserName" class="text-danger"></span>
             </div>
 
             <button type="submit" class="btn btn-primary w-100">
-                Enviar enlace
+                Reenviar enlace
             </button>
-            
+
             <div class="text-center mt-3">
                 <a asp-action="Login" class="text-decoration-none">Volver al inicio de sesión</a>
             </div>

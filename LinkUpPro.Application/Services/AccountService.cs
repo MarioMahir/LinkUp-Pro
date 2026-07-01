@@ -30,12 +30,14 @@ namespace LinkUpPro.Application.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<ServiceResult> LoginAsync(LoginViewModel vm)
+        public async Task<ServiceResult>
+LoginAsync(LoginViewModel vm)
         {
             var user =
                 await _userManager
                 .FindByNameAsync(vm.UserName);
 
+            // Usuario inexistente
             if (user == null)
             {
                 return new()
@@ -46,7 +48,7 @@ namespace LinkUpPro.Application.Services
                 };
             }
 
-            // Cuenta activada
+            // Cuenta inactiva
             if (!user.EmailConfirmed)
             {
                 return new()
@@ -57,7 +59,7 @@ namespace LinkUpPro.Application.Services
                 };
             }
 
-            // Bloqueo
+            // Cuenta bloqueada
             if (await _userManager.IsLockedOutAsync(user))
             {
                 return new()
@@ -68,17 +70,27 @@ namespace LinkUpPro.Application.Services
                 };
             }
 
-            // Validar contraseña
+            // Validar contraseña manualmente
             var passwordCorrect =
-                await _userManager
-                .CheckPasswordAsync(
+                await _userManager.CheckPasswordAsync(
                     user,
                     vm.Password);
 
             if (!passwordCorrect)
             {
-                await _userManager
-                    .AccessFailedAsync(user);
+                // Incrementa intentos fallidos
+                await _userManager.AccessFailedAsync(user);
+
+                // Verifica si se bloqueó
+                if (await _userManager.IsLockedOutAsync(user))
+                {
+                    return new()
+                    {
+                        Succeeded = false,
+                        Message =
+                        "La cuenta se encuentra bloqueada temporalmente debido a varios intentos fallidos. Inténtelo nuevamente en 15 minutos o restablezca su contraseña."
+                    };
+                }
 
                 return new()
                 {
@@ -88,29 +100,44 @@ namespace LinkUpPro.Application.Services
                 };
             }
 
-            // Reiniciar contador
-            await _userManager
-                .ResetAccessFailedCountAsync(
-                    user);
+            // Reinicia intentos fallidos
+            await _userManager.ResetAccessFailedCountAsync(user);
 
-            // Login
-            await _signInManager
-                .SignInAsync(
-                    user,
-                    new AuthenticationProperties
-                    {
-                        IsPersistent = vm.RememberMe,
-
-                        ExpiresUtc =
-                        vm.RememberMe
-                        ? DateTimeOffset.UtcNow.AddDays(7)
-                        : null
-                    });
+            // Login real
+            await _signInManager.SignInAsync(
+                user,
+                vm.RememberMe);
 
             return new()
             {
                 Succeeded = true
             };
+        }
+
+        private async Task<string> SaveFile(IFormFile file)
+        {
+            string fileName =
+                Guid.NewGuid()
+                + Path.GetExtension(file.FileName);
+
+            string path =
+                Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot/images/users",
+                    fileName);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+
+            using (var stream =
+                new FileStream(
+                    path,
+                    FileMode.Create))
+            {
+
+                await file.CopyToAsync(stream);
+            }
+
+            return $"/images/users/{fileName}";
         }
 
         public async Task<ServiceResult> RegisterAsync(RegisterViewModel vm)
@@ -124,7 +151,7 @@ namespace LinkUpPro.Application.Services
                 UserName = vm.UserName,
                 Email = vm.Email,
                 PhoneNumber = vm.PhoneNumber,
-                ProfilePicturePath = imagePath
+                ProfilePictureUrl = imagePath
             };
 
             var result =
@@ -319,9 +346,9 @@ Restablecer contraseña
                 .ResetAccessFailedCountAsync(user);
 
             await _userManager
-                .SetLockoutEndDateAsync(
-                    user,
-                    null);
+                .SetLockoutEndDateAsync(user, null);
+
+            await _userManager.UpdateSecurityStampAsync(user);
 
             return new()
             {
@@ -333,6 +360,75 @@ Restablecer contraseña
         {
             await _signInManager
                 .SignOutAsync();
+        }
+
+        public async Task<ServiceResult>
+ResendActivationAsync(
+ResendActivationViewModel vm)
+        {
+            var user =
+            await _userManager
+            .FindByNameAsync(
+            vm.UserName);
+
+            if (user == null
+                || user.EmailConfirmed)
+            {
+                return new()
+                {
+                    Succeeded = true,
+
+                    Message =
+                    "Si la cuenta existe y todavía no ha sido activada, recibirá un nuevo enlace."
+                };
+            }
+
+            if (user.LastActivationRequestDate
+                >= DateTime.UtcNow.AddMinutes(-5))
+            {
+                return new()
+                {
+                    Succeeded = true,
+
+                    Message =
+                    "Espere 5 minutos antes de solicitar otro enlace."
+                };
+            }
+
+            var token =
+            await _userManager
+            .GenerateEmailConfirmationTokenAsync(
+            user);
+
+            var request =
+            _httpContextAccessor.HttpContext.Request;
+
+            var baseUrl =
+            $"{request.Scheme}://{request.Host}";
+
+            var link =
+            $"{baseUrl}/Account/ActivateAccount?userId={user.Id}&token={Uri.EscapeDataString(token)}";
+
+            await _emailService
+            .SendEmailAsync(
+            user.Email,
+            "Nuevo enlace",
+
+            $"<a href='{link}'>Activar cuenta</a>");
+
+            user.LastActivationRequestDate =
+            DateTime.UtcNow;
+
+            await _userManager
+            .UpdateAsync(user);
+
+            return new()
+            {
+                Succeeded = true,
+
+                Message =
+                "Si la cuenta existe y todavía no ha sido activada, recibirá un nuevo enlace."
+            };
         }
     }
 }
