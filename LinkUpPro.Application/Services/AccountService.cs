@@ -115,13 +115,16 @@ namespace LinkUpPro.Application.Services
 
         public async Task<ServiceResult> RegisterAsync(RegisterViewModel vm)
         {
+            string imagePath = await SaveFile(vm.ProfilePicture);
+
             var user = new ApplicationUser
             {
                 FirstName = vm.FirstName,
                 LastName = vm.LastName,
                 UserName = vm.UserName,
                 Email = vm.Email,
-                PhoneNumber = vm.PhoneNumber
+                PhoneNumber = vm.PhoneNumber,
+                ProfilePicturePath = imagePath
             };
 
             var result =
