@@ -20,6 +20,8 @@ namespace LinkUpPro.Application.Interfaces
 
         Task<ServiceResult> ActivateAccountAsync(string userId, string token);
 
+        Task<ServiceResult> ResendActivationAsync(ResendActivationViewModel vm);
+
         Task LogoutAsync();
     }
 }

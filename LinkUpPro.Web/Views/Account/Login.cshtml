@@ -18,73 +18,44 @@
     </div>
 }
 
-<h2>Iniciar Sesión</h2>
+<div class="row justify-content-center">
+    <div class="col-md-4">
+        <h2 class="mb-4 text-center">Iniciar Sesión</h2>
 
-<form asp-controller="Account"
-      asp-action="Login"
-      method="post">
+        <form asp-controller="Account"
+              asp-action="Login"
+              method="post" class="card shadow-sm p-4">
 
-    <div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Usuario</label>
+                <input asp-for="UserName" class="form-control" placeholder="Introduce tu usuario" />
+                <span asp-validation-for="UserName" class="text-danger"></span>
+            </div>
 
-        <label>Usuario</label>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Contraseña</label>
+                <div class="input-group">
+                    <input asp-for="Password" id="password" class="form-control" placeholder="Introduce tu contraseña" />
+                    <button type="button" class="btn btn-outline-secondary" onclick="togglePassword()">Mostrar</button>
+                </div>
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
 
-        <input asp-for="UserName" />
+            <div class="mb-3 form-check">
+                <input asp-for="RememberMe" class="form-check-input" />
+                <label class="form-check-label">Mantener sesión iniciada</label>
+            </div>
 
-        <span asp-validation-for="UserName"></span>
+            <button type="submit" class="btn btn-primary w-100 mb-3">Iniciar sesión</button>
 
+            <div class="text-center d-flex flex-column gap-2">
+                <a asp-action="Register" class="text-decoration-none">Registrarse</a>
+                <a asp-action="ForgotPassword" class="text-decoration-none text-muted">Restablecer contraseña</a>
+                <a asp-action="ResendActivation" class="text-decoration-none text-muted" style="font-size: 0.9em;">Reenviar correo de activación</a>
+            </div>
+        </form>
     </div>
-
-    <div>
-
-        <label>Contraseña</label>
-
-        <input asp-for="Password"
-               id="password" />
-
-        <button type="button"
-                onclick="togglePassword()">
-
-            Mostrar
-
-        </button>
-
-        <span asp-validation-for="Password"></span>
-
-    </div>
-
-    <div>
-
-        <input asp-for="RememberMe" />
-
-        <label>
-            Mantener sesión iniciada
-        </label>
-
-    </div>
-
-    <button type="submit">
-
-        Iniciar sesión
-
-    </button>
-
-</form>
-
-<br>
-
-<a asp-action="Register">
-
-    Registrarse
-
-</a>
-
-<br>
-
-<a asp-action="ForgotPassword">
-
-    Restablecer contraseña
-
-</a>
+</div>
 
 <script>
 

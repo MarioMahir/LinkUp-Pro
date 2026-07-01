@@ -18,13 +18,16 @@ namespace LinkUpPro.Web.Controllers
         // LOGIN
 
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string message)
         {
+            if (message == "inactivity")
+            {
+                TempData["Error"] = "Su sesión finalizó por inactividad. Inicie sesión nuevamente.";
+            }
+
             if (User.Identity.IsAuthenticated)
             {
-                return RedirectToAction(
-                    "Index",
-                    "Home");
+                return RedirectToAction("Index", "Home");
             }
 
             return View();
@@ -241,6 +244,34 @@ namespace LinkUpPro.Web.Controllers
 
             return RedirectToAction(
                 "Login");
+        }
+
+        [HttpGet]
+        public IActionResult
+ResendActivation()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult>
+        ResendActivation(
+        ResendActivationViewModel vm)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(vm);
+            }
+
+            var result =
+            await _accountService
+            .ResendActivationAsync(vm);
+
+            TempData["Message"] =
+            result.Message;
+
+            return RedirectToAction(
+            "Login");
         }
     }
 }

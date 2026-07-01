@@ -2,6 +2,7 @@ using LinkUpPro.Application.Interfaces;
 using LinkUpPro.Application.Services;
 using LinkUpPro.Core.Entities;
 using LinkUpPro.Infrastructure.Persistence;
+using LinkUpPro.Infrastructure.Repositories;
 using LinkUpPro.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IPostRepository, PostRepository>();
+builder.Services.AddScoped<IPostService, PostService>();
 
 
 
@@ -39,6 +42,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
     opt.Password.RequiredLength = 8;
 
     opt.SignIn.RequireConfirmedEmail = true;
+
+    opt.User.RequireUniqueEmail = true;
 })
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
@@ -54,6 +59,13 @@ builder.Services.ConfigureApplicationCookie(opt =>
     opt.ExpireTimeSpan = TimeSpan.FromMinutes(30);
 
     opt.SlidingExpiration = true;
+
+    opt.Events.OnRedirectToLogin = context =>
+    {
+        context.Response.Redirect("Account/Login?message=inactivity");
+
+        return Task.CompletedTask;
+    };
 
 });
 

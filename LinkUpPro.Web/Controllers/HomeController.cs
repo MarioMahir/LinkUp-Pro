@@ -1,32 +1,94 @@
-using System.Diagnostics;
-using LinkUpPro.Web.Models;
+using LinkUpPro.Application.Interfaces;
+using LinkUpPro.Application.ViewModels;
+using LinkUpPro.Core.Entities;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LinkUpPro.Web.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly IPostService
+            _postService;
 
-        public HomeController(ILogger<HomeController> logger)
+        private readonly UserManager<ApplicationUser>
+            _userManager;
+
+        public HomeController(
+            IPostService postService,
+            UserManager<ApplicationUser>
+            userManager)
         {
-            _logger = logger;
+            _postService =
+                postService;
+
+            _userManager =
+                userManager;
         }
 
-        public IActionResult Index()
+        [HttpGet]
+        public async Task<IActionResult>
+        Index()
         {
-            return View();
+            var user =
+                await _userManager
+                .GetUserAsync(User);
+
+            HomeViewModel vm =
+                new();
+
+            vm.Posts =
+                await _postService
+                .GetAllByUserAsync(
+                    user.Id);
+
+            return View(vm);
         }
 
-        public IActionResult Privacy()
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult>
+        CreatePost(
+            HomeViewModel vm)
         {
-            return View();
-        }
+            try
+            {
+                var user =
+                    await _userManager
+                    .GetUserAsync(User);
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+                await _postService
+                    .CreateAsync(
+                        vm.NewPost,
+                        user.Id);
+
+                TempData["Message"] =
+                "La publicación fue creada correctamente.";
+
+                return RedirectToAction(
+                    "Index");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(
+                    "",
+                    ex.Message);
+
+                var user =
+                    await _userManager
+                    .GetUserAsync(User);
+
+                vm.Posts =
+                    await _postService
+                    .GetAllByUserAsync(
+                        user.Id);
+
+                return View(
+                    "Index",
+                    vm);
+            }
         }
     }
 }

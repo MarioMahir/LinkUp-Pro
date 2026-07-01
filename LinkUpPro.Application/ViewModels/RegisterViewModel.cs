@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using LinkUpPro.Application.Attributes;
 
 namespace LinkUpPro.Application.ViewModels
 {
@@ -27,6 +28,8 @@ namespace LinkUpPro.Application.ViewModels
         public string Email { get; set; }
 
         [Required(ErrorMessage = "La imagen es requerida")]
+        [DataType(DataType.Upload)]
+        [ValidateFile(maxFileSizeMb: 5, allowedExtensions: new[] { ".jpg", ".jpeg", ".png" })]
         public IFormFile ProfilePicture { get; set; }
 
         [Required(ErrorMessage = "El usuario es requerido")]

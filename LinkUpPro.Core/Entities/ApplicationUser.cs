@@ -18,5 +18,13 @@ namespace LinkUpPro.Core.Entities
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 
         public DateTime? UpdatedDate { get; set; }
+
+        public DateTime? LastActivationRequestDate { get; set; }
+
+        public ICollection<Post>? Posts { get; set; }
+
+        public ICollection<Comment>? Comments { get; set; }
+
+        public ICollection<PostReaction>? Reactions { get; set; }
     }
 }
