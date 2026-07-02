@@ -1,0 +1,131 @@
+@model LinkUpPro.Application.ViewModels.PostViewModel
+
+@{
+    var currentUserId = (string)(ViewData["CurrentUserId"] ?? "");
+    var returnUrl = (string)(ViewData["ReturnUrl"] ?? "");
+    var isOwner = Model.AuthorId == currentUserId;
+}
+
+<div class="card mb-3" id="post-@Model.Id">
+    <div class="card-body">
+        <div class="d-flex justify-content-between">
+            <div class="d-flex">
+                <img src="@(string.IsNullOrEmpty(Model.ProfilePicture) ? "/images/default-avatar.svg" : Model.ProfilePicture)"
+                     width="50" height="50" class="rounded-circle" style="object-fit:cover;" />
+                <div class="ms-3">
+                    <h6 class="mb-0">
+                        @if (!isOwner)
+                        {
+                            <a asp-controller="Friend" asp-action="Profile" asp-route-userId="@Model.AuthorId">@Model.AuthorFullName (@Model.UserName)</a>
+                        }
+                        else
+                        {
+                            @Model.UserName
+                        }
+                    </h6>
+                    <small class="text-muted">
+                        @Model.CreatedDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                        @if (Model.IsEdited)
+                        {
+                            <span class="badge bg-warning text-dark ms-1">Editada</span>
+                        }
+                        <span class="badge bg-light text-dark ms-1">@(Model.Privacy == "Friends" ? "Solo amigos" : "Solo yo")</span>
+                    </small>
+                </div>
+            </div>
+
+            @if (isOwner)
+            {
+                <div>
+                    <a class="btn btn-sm btn-outline-secondary" asp-controller="Home" asp-action="Edit" asp-route-id="@Model.Id">Editar</a>
+                    <a class="btn btn-sm btn-outline-danger" asp-controller="Home" asp-action="DeleteConfirm" asp-route-id="@Model.Id">Eliminar</a>
+                </div>
+            }
+        </div>
+
+        <hr />
+
+        <p style="white-space:pre-wrap;">@Model.Content</p>
+
+        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+        {
+            <img src="@Model.ImageUrl" class="img-fluid rounded mb-2" />
+        }
+
+        @if (!string.IsNullOrEmpty(Model.YoutubeUrl))
+        {
+            var videoId = LinkUpPro.Web.Helpers.YouTubeHelper.ExtractVideoId(Model.YoutubeUrl);
+            if (videoId != null)
+            {
+                <div class="ratio ratio-16x9 mb-2">
+                    <iframe src="https://www.youtube.com/embed/@videoId" allowfullscreen></iframe>
+                </div>
+            }
+        }
+
+        <hr />
+
+        <div class="d-flex align-items-center">
+            @{
+                var myReaction = Model.CurrentUserReactionIsLike;
+            }
+            <form asp-controller="Home" asp-action="React" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="postId" value="@Model.Id" />
+                <input type="hidden" name="isLike" value="true" />
+                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                <button type="submit" class="btn btn-sm @(myReaction == true ? "btn-primary" : "btn-outline-primary")">
+                    👍 Me gusta (@Model.LikesCount)
+                </button>
+            </form>
+            <form asp-controller="Home" asp-action="React" method="post" class="d-inline ms-2">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="postId" value="@Model.Id" />
+                <input type="hidden" name="isLike" value="false" />
+                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                <button type="submit" class="btn btn-sm @(myReaction == false ? "btn-danger" : "btn-outline-danger")">
+                    👎 No me gusta (@Model.DislikesCount)
+                </button>
+            </form>
+            @if (myReaction.HasValue)
+            {
+                <form asp-controller="Home" asp-action="RemoveReaction" method="post" class="d-inline ms-2">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="postId" value="@Model.Id" />
+                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                    <button type="submit" class="btn btn-sm btn-outline-secondary">Eliminar reacción</button>
+                </form>
+            }
+        </div>
+
+        <hr />
+
+        <div>
+            <strong>Comentarios</strong>
+
+            @if (!Model.AllowComments)
+            {
+                <div class="text-muted fst-italic">Los comentarios están desactivados para esta publicación.</div>
+            }
+
+            @{ ViewData["CurrentUserId"] = currentUserId; ViewData["ReturnUrl"] = returnUrl; ViewData["AllowComments"] = Model.AllowComments; ViewData["Depth"] = 0; }
+            @foreach (var comment in Model.Comments)
+            {
+                <partial name="_CommentThread" model="comment" />
+            }
+
+            @if (Model.AllowComments)
+            {
+                <form asp-controller="Home" asp-action="AddComment" method="post" class="mt-2">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="postId" value="@Model.Id" />
+                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                    <div class="input-group input-group-sm">
+                        <input type="text" name="content" class="form-control" placeholder="Escriba un comentario..." maxlength="500" />
+                        <button class="btn btn-primary" type="submit">Comentar</button>
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+</div>

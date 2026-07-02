@@ -1,0 +1,111 @@
+@model LinkUpPro.Application.ViewModels.FriendFeedViewModel
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3>@Model.TotalFriends</h3>
+                <div class="text-muted">Total de amigos</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3>@Model.TotalVisiblePosts</h3>
+                <div class="text-muted">Publicaciones disponibles</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-3">
+            <div class="card-header">Buscar publicaciones de amigos</div>
+            <div class="card-body">
+                <form method="get" class="row g-2">
+                    <div class="col-md-3">
+                        <input asp-for="SearchText" class="form-control" placeholder="Buscar" />
+                    </div>
+                    <div class="col-md-3">
+                        <select asp-for="FriendUserId" class="form-select">
+                            <option value="">Todos los amigos</option>
+                            @foreach (var f in Model.Friends)
+                            {
+                                <option value="@f.UserId">@f.UserName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select asp-for="ContentType" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="Image">Imagen</option>
+                            <option value="YouTube">Video de YouTube</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <input asp-for="DateFrom" type="date" class="form-control" />
+                    </div>
+                    <div class="col-md-2">
+                        <input asp-for="DateTo" type="date" class="form-control" />
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-success btn-sm" type="submit">Buscar</button>
+                        <a asp-action="Index" class="btn btn-secondary btn-sm">Limpiar filtros</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        @if (Model.Friends.Count == 0)
+        {
+            <div class="alert alert-info">Todavía no tiene amigos agregados.</div>
+        }
+        else if (Model.Posts.Count == 0)
+        {
+            <div class="alert alert-info">Sus amigos todavía no han realizado publicaciones disponibles para usted.</div>
+        }
+        else
+        {
+            foreach (var post in Model.Posts)
+            {
+                <partial name="_PostCard" model="post" />
+            }
+        }
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">Mis amigos</div>
+            <div class="card-body">
+                <form method="get" class="input-group input-group-sm mb-3">
+                    <input asp-for="FriendSearchText" class="form-control" placeholder="Buscar amigo..." />
+                    <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+                </form>
+
+                @if (Model.Friends.Count == 0)
+                {
+                    <div class="text-muted">No se encontraron amigos.</div>
+                }
+                else
+                {
+                    foreach (var friend in Model.Friends)
+                    {
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center">
+                                <img src="@(string.IsNullOrEmpty(friend.ProfilePicture) ? "/images/default-avatar.svg" : friend.ProfilePicture)"
+                                     width="36" height="36" class="rounded-circle me-2" style="object-fit:cover;" />
+                                <div>
+                                    <a asp-action="Profile" asp-route-userId="@friend.UserId">@friend.FirstName @friend.LastName</a>
+                                    <div class="small text-muted">@friend.UserName &middot; @friend.MutualFriendsCount amigos en común</div>
+                                </div>
+                            </div>
+                            <a asp-action="RemoveFriendConfirm" asp-route-friendId="@friend.UserId" class="btn btn-sm btn-outline-danger">Eliminar</a>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>

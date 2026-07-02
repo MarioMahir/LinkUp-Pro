@@ -107,6 +107,104 @@ namespace LinkUpPro.Infrastructure.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("LinkUpPro.Core.Entities.Attack", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AttackerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Col")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("GameId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Row")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("WasHit")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttackerId");
+
+                    b.HasIndex("GameId", "AttackerId", "Row", "Col")
+                        .IsUnique();
+
+                    b.ToTable("Attacks", (string)null);
+                });
+
+            modelBuilder.Entity("LinkUpPro.Core.Entities.BattleshipGame", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CurrentTurnUserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FinishReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("FinishedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PairKey")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("PlayerOneId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("PlayerOneShipsReady")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PlayerTwoId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("PlayerTwoShipsReady")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("TurnAssignedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("WinnerId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PairKey")
+                        .IsUnique()
+                        .HasFilter("[Status] <> 'Finished'");
+
+                    b.HasIndex("PlayerOneId");
+
+                    b.HasIndex("PlayerTwoId");
+
+                    b.ToTable("BattleshipGames", (string)null);
+                });
+
             modelBuilder.Entity("LinkUpPro.Core.Entities.Comment", b =>
                 {
                     b.Property<int>("Id")
@@ -146,7 +244,136 @@ namespace LinkUpPro.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comments");
+                    b.ToTable("Comments", (string)null);
+                });
+
+            modelBuilder.Entity("LinkUpPro.Core.Entities.FriendRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsHiddenFromSender")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PairKey")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ReceiverId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("RespondedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("SentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PairKey")
+                        .IsUnique()
+                        .HasFilter("[Status] = 'Pending'");
+
+                    b.HasIndex("ReceiverId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("FriendRequests", (string)null);
+                });
+
+            modelBuilder.Entity("LinkUpPro.Core.Entities.Friendship", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("RemovedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserOneId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UserTwoId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserTwoId");
+
+                    b.HasIndex("UserOneId", "UserTwoId")
+                        .IsUnique();
+
+                    b.ToTable("Friendships", (string)null);
+                });
+
+            modelBuilder.Entity("LinkUpPro.Core.Entities.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ActorId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int?>("CommentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("PostId")
+                        .HasColumnType("int");
+
+                    b.Property<bool?>("ReactionIsLike")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("RecipientId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ActorId");
+
+                    b.HasIndex("CommentId");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("RecipientId");
+
+                    b.ToTable("Notifications", (string)null);
                 });
 
             modelBuilder.Entity("LinkUpPro.Core.Entities.Post", b =>
@@ -198,7 +425,7 @@ namespace LinkUpPro.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Posts");
+                    b.ToTable("Posts", (string)null);
                 });
 
             modelBuilder.Entity("LinkUpPro.Core.Entities.PostReaction", b =>
@@ -221,11 +448,50 @@ namespace LinkUpPro.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PostId");
-
                     b.HasIndex("UserId");
 
-                    b.ToTable("PostReactions");
+                    b.HasIndex("PostId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("PostReactions", (string)null);
+                });
+
+            modelBuilder.Entity("LinkUpPro.Core.Entities.Ship", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Direction")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("GameId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Length")
+                        .HasColumnType("int");
+
+                    b.Property<string>("OwnerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("StartCol")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StartRow")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("GameId", "OwnerId", "StartRow", "StartCol")
+                        .IsUnique();
+
+                    b.ToTable("Ships", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -361,6 +627,42 @@ namespace LinkUpPro.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("LinkUpPro.Core.Entities.Attack", b =>
+                {
+                    b.HasOne("LinkUpPro.Core.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("AttackerId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("LinkUpPro.Core.Entities.BattleshipGame", "Game")
+                        .WithMany("Attacks")
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Game");
+                });
+
+            modelBuilder.Entity("LinkUpPro.Core.Entities.BattleshipGame", b =>
+                {
+                    b.HasOne("LinkUpPro.Core.Entities.ApplicationUser", "PlayerOne")
+                        .WithMany()
+                        .HasForeignKey("PlayerOneId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("LinkUpPro.Core.Entities.ApplicationUser", "PlayerTwo")
+                        .WithMany()
+                        .HasForeignKey("PlayerTwoId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("PlayerOne");
+
+                    b.Navigation("PlayerTwo");
+                });
+
             modelBuilder.Entity("LinkUpPro.Core.Entities.Comment", b =>
                 {
                     b.HasOne("LinkUpPro.Core.Entities.Comment", "ParentComment")
@@ -385,6 +687,78 @@ namespace LinkUpPro.Infrastructure.Migrations
                     b.Navigation("Post");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LinkUpPro.Core.Entities.FriendRequest", b =>
+                {
+                    b.HasOne("LinkUpPro.Core.Entities.ApplicationUser", "Receiver")
+                        .WithMany()
+                        .HasForeignKey("ReceiverId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("LinkUpPro.Core.Entities.ApplicationUser", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Receiver");
+
+                    b.Navigation("Sender");
+                });
+
+            modelBuilder.Entity("LinkUpPro.Core.Entities.Friendship", b =>
+                {
+                    b.HasOne("LinkUpPro.Core.Entities.ApplicationUser", "UserOne")
+                        .WithMany()
+                        .HasForeignKey("UserOneId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("LinkUpPro.Core.Entities.ApplicationUser", "UserTwo")
+                        .WithMany()
+                        .HasForeignKey("UserTwoId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("UserOne");
+
+                    b.Navigation("UserTwo");
+                });
+
+            modelBuilder.Entity("LinkUpPro.Core.Entities.Notification", b =>
+                {
+                    b.HasOne("LinkUpPro.Core.Entities.ApplicationUser", "Actor")
+                        .WithMany()
+                        .HasForeignKey("ActorId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("LinkUpPro.Core.Entities.Comment", "Comment")
+                        .WithMany()
+                        .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("LinkUpPro.Core.Entities.Post", "Post")
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("LinkUpPro.Core.Entities.ApplicationUser", "Recipient")
+                        .WithMany()
+                        .HasForeignKey("RecipientId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Actor");
+
+                    b.Navigation("Comment");
+
+                    b.Navigation("Post");
+
+                    b.Navigation("Recipient");
                 });
 
             modelBuilder.Entity("LinkUpPro.Core.Entities.Post", b =>
@@ -415,6 +789,23 @@ namespace LinkUpPro.Infrastructure.Migrations
                     b.Navigation("Post");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("LinkUpPro.Core.Entities.Ship", b =>
+                {
+                    b.HasOne("LinkUpPro.Core.Entities.BattleshipGame", "Game")
+                        .WithMany("Ships")
+                        .HasForeignKey("GameId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("LinkUpPro.Core.Entities.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Game");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -475,6 +866,13 @@ namespace LinkUpPro.Infrastructure.Migrations
                     b.Navigation("Posts");
 
                     b.Navigation("Reactions");
+                });
+
+            modelBuilder.Entity("LinkUpPro.Core.Entities.BattleshipGame", b =>
+                {
+                    b.Navigation("Attacks");
+
+                    b.Navigation("Ships");
                 });
 
             modelBuilder.Entity("LinkUpPro.Core.Entities.Comment", b =>

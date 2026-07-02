@@ -16,17 +16,21 @@ namespace LinkUpPro.Application.Services
 
         private readonly IEmailService _emailService;
 
+        private readonly IFileStorageService _fileStorageService;
+
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public AccountService(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IEmailService emailService,
+            IFileStorageService fileStorageService,
             IHttpContextAccessor httpContextAccessor)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailService = emailService;
+            _fileStorageService = fileStorageService;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -104,9 +108,15 @@ LoginAsync(LoginViewModel vm)
             await _userManager.ResetAccessFailedCountAsync(user);
 
             // Login real
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = vm.RememberMe,
+                ExpiresUtc = vm.RememberMe ? DateTimeOffset.UtcNow.AddDays(7) : null
+            };
+
             await _signInManager.SignInAsync(
                 user,
-                vm.RememberMe);
+                authProperties);
 
             return new()
             {
@@ -114,35 +124,9 @@ LoginAsync(LoginViewModel vm)
             };
         }
 
-        private async Task<string> SaveFile(IFormFile file)
-        {
-            string fileName =
-                Guid.NewGuid()
-                + Path.GetExtension(file.FileName);
-
-            string path =
-                Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "wwwroot/images/users",
-                    fileName);
-
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-
-            using (var stream =
-                new FileStream(
-                    path,
-                    FileMode.Create))
-            {
-
-                await file.CopyToAsync(stream);
-            }
-
-            return $"/images/users/{fileName}";
-        }
-
         public async Task<ServiceResult> RegisterAsync(RegisterViewModel vm)
         {
-            string imagePath = await SaveFile(vm.ProfilePicture);
+            string imagePath = await _fileStorageService.SaveAsync(vm.ProfilePicture, "users");
 
             var user = new ApplicationUser
             {

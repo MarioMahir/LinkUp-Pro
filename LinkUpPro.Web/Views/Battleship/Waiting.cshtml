@@ -1,0 +1,10 @@
+@model LinkUpPro.Application.ViewModels.BattleshipBoardViewModel
+
+<h2>Partida contra @Model.OpponentUserName</h2>
+
+<div class="alert alert-info text-center">El otro jugador aún no ha terminado de posicionar todos sus barcos.</div>
+
+@{ ViewData["Mode"] = "ships"; }
+<partial name="_BoardGrid" model="Model.Board" />
+
+<a asp-action="Index" class="btn btn-secondary mt-3">Volver atrás</a>

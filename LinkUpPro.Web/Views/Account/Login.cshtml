@@ -1,4 +1,4 @@
-﻿@model LinkUpPro.Application.ViewModels.LoginViewModel
+@model LinkUpPro.Application.ViewModels.LoginViewModel
 
 @if (TempData["Message"] != null)
 {
@@ -22,6 +22,8 @@
     <div class="col-md-4">
         <h2 class="mb-4 text-center">Iniciar Sesión</h2>
 
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
         <form asp-controller="Account"
               asp-action="Login"
               method="post" class="card shadow-sm p-4">
@@ -36,15 +38,16 @@
                 <label class="form-label fw-bold">Contraseña</label>
                 <div class="input-group">
                     <input asp-for="Password" id="password" class="form-control" placeholder="Introduce tu contraseña" />
-                    <button type="button" class="btn btn-outline-secondary" onclick="togglePassword()">Mostrar</button>
+                    <button type="button" class="btn btn-outline-secondary" id="togglePassword">Mostrar</button>
                 </div>
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
 
-            <div class="mb-3 form-check">
+            <div class="mb-1 form-check">
                 <input asp-for="RememberMe" class="form-check-input" />
                 <label class="form-check-label">Mantener sesión iniciada</label>
             </div>
+            <small class="text-muted d-block mb-3">Seleccione esta opción únicamente si está utilizando un dispositivo personal.</small>
 
             <button type="submit" class="btn btn-primary w-100 mb-3">Iniciar sesión</button>
 
@@ -57,22 +60,9 @@
     </div>
 </div>
 
-<script>
-
-    function togglePassword()
-    {
-        var password=
-        document.getElementById(
-        "password");
-
-        password.type=
-        password.type==="password"
-        ? "text"
-        : "password";
-    }
-
-</script>
-
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        wireTogglePassword("togglePassword", "password");
+    </script>
 }

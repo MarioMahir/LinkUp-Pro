@@ -1,0 +1,38 @@
+@model LinkUpPro.Application.ViewModels.NewFriendRequestViewModel
+
+<h2>Nueva solicitud de amistad</h2>
+
+<form method="get" class="input-group mb-3">
+    <input name="search" value="@Model.SearchText" class="form-control" placeholder="Buscar por nombre de usuario..." />
+    <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+    <a asp-action="NewRequest" class="btn btn-secondary">Limpiar búsqueda</a>
+</form>
+
+<form asp-action="Send" method="post">
+    @Html.AntiForgeryToken()
+
+    @if (Model.AvailableUsers.Count == 0)
+    {
+        <div class="alert alert-info">No existen usuarios disponibles para enviar una solicitud de amistad.</div>
+    }
+    else
+    {
+        <div class="list-group mb-3">
+            @foreach (var u in Model.AvailableUsers)
+            {
+                <label class="list-group-item d-flex align-items-center">
+                    <input type="radio" name="selectedUserId" value="@u.UserId" class="form-check-input me-3" />
+                    <img src="@(string.IsNullOrEmpty(u.ProfilePicture) ? "/images/default-avatar.svg" : u.ProfilePicture)"
+                         width="40" height="40" class="rounded-circle me-2" style="object-fit:cover;" />
+                    <div>
+                        <strong>@u.FirstName @u.LastName</strong> (@u.UserName)
+                        <div class="small text-muted">@u.MutualFriendsCount amigo(s) en común</div>
+                    </div>
+                </label>
+            }
+        </div>
+    }
+
+    <a asp-action="Requests" class="btn btn-secondary">Volver atrás</a>
+    <button type="submit" class="btn btn-primary">Enviar solicitud</button>
+</form>

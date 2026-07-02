@@ -17,6 +17,7 @@ namespace LinkUpPro.Web.Controllers
 
         // LOGIN
 
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult Login(string message)
         {
@@ -33,6 +34,7 @@ namespace LinkUpPro.Web.Controllers
             return View();
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult>
@@ -61,6 +63,7 @@ namespace LinkUpPro.Web.Controllers
 
         // REGISTER
 
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult Register()
         {
@@ -74,6 +77,7 @@ namespace LinkUpPro.Web.Controllers
             return View();
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult>
@@ -106,6 +110,7 @@ namespace LinkUpPro.Web.Controllers
 
         // ACTIVAR CUENTA
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult>
         ActivateAccount(
@@ -146,6 +151,7 @@ namespace LinkUpPro.Web.Controllers
 
         // FORGOT PASSWORD
 
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult ForgotPassword()
         {
@@ -159,6 +165,7 @@ namespace LinkUpPro.Web.Controllers
             return View();
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult>
@@ -181,6 +188,7 @@ namespace LinkUpPro.Web.Controllers
 
         // RESET PASSWORD
 
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult
         ResetPassword(
@@ -202,6 +210,7 @@ namespace LinkUpPro.Web.Controllers
                 });
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult>
@@ -246,6 +255,7 @@ namespace LinkUpPro.Web.Controllers
                 "Login");
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult
 ResendActivation()
@@ -253,7 +263,9 @@ ResendActivation()
             return View();
         }
 
+        [AllowAnonymous]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult>
         ResendActivation(
         ResendActivationViewModel vm)

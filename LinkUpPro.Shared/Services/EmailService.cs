@@ -1,9 +1,9 @@
-﻿using LinkUpPro.Application.Interfaces;
+using LinkUpPro.Application.Interfaces;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
 
-namespace LinkUpPro.Infrastructure.Services
+namespace LinkUpPro.Shared.Services
 {
 
     public class EmailService : IEmailService
@@ -41,7 +41,15 @@ namespace LinkUpPro.Infrastructure.Services
 
                 message.Body = bodyBuilder.ToMessageBody();
 
-                using var client = new SmtpClient();
+                using var client = new SmtpClient
+                {
+                    // Algunas redes bloquean las consultas OCSP/CRL salientes,
+                    // lo que hace que .NET no pueda confirmar el estado de
+                    // revocación de un certificado por lo demás válido. Esto
+                    // desactiva únicamente esa comprobación puntual, no la
+                    // validación de la cadena de confianza ni del hostname.
+                    CheckCertificateRevocation = false
+                };
 
                 await client.ConnectAsync(
                     _settings.Host,
