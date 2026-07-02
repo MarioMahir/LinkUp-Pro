@@ -1,0 +1,35 @@
+@model LinkUpPro.Application.ViewModels.ShipSelectionViewModel
+
+<h2>Posicionar barcos</h2>
+<p class="text-muted">Seleccione un barco de la lista y presione "Posicionar barco" para elegir su ubicación en el tablero.</p>
+
+<div class="row">
+    <div class="col-md-5">
+        @if (Model.RemainingShips.Count == 0)
+        {
+            <div class="alert alert-success">Ha posicionado todos sus barcos. Esperando a que continúe la partida...</div>
+        }
+        else
+        {
+            <form method="get" asp-action="PlaceShip">
+                <input type="hidden" name="id" value="@Model.GameId" />
+                <strong>Selecciona un barco:</strong>
+                @foreach (var ship in Model.RemainingShips)
+                {
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="length" value="@ship.Length" id="ship-@ship.Length" required />
+                        <label class="form-check-label" for="ship-@ship.Length">@ship.Label</label>
+                    </div>
+                }
+                <button type="submit" class="btn btn-success mt-2">Posicionar barco</button>
+            </form>
+        }
+    </div>
+    <div class="col-md-7">
+        <strong>Su tablero actual:</strong>
+        @{ ViewData["Mode"] = "ships"; }
+        <partial name="_BoardGrid" model="Model.Board" />
+    </div>
+</div>
+
+<a asp-action="Index" class="btn btn-secondary mt-3">Volver atrás</a>

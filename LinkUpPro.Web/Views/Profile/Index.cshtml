@@ -1,0 +1,87 @@
+@model LinkUpPro.Application.ViewModels.ProfileViewModel
+
+<h2>Mi perfil</h2>
+
+<div class="card p-4">
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+    <div class="d-flex align-items-center mb-4">
+        <img src="@(string.IsNullOrEmpty(Model.CurrentProfilePictureUrl) ? "/images/default-avatar.svg" : Model.CurrentProfilePictureUrl)"
+             width="90" height="90" class="rounded-circle me-3" style="object-fit:cover;" />
+        <div>
+            <div><strong>Correo electrónico:</strong> @Model.Email</div>
+            <div><strong>Nombre de usuario:</strong> @Model.UserName</div>
+        </div>
+    </div>
+
+    <form asp-controller="Profile" asp-action="Index" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Nombre</label>
+            <input asp-for="FirstName" class="form-control" />
+            <span asp-validation-for="FirstName" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Apellido</label>
+            <input asp-for="LastName" class="form-control" />
+            <span asp-validation-for="LastName" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Teléfono</label>
+            <input asp-for="PhoneNumber" class="form-control" placeholder="809-555-1234" />
+            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Foto de perfil</label>
+            <input asp-for="ProfilePictureFile" class="form-control" type="file" accept=".jpg,.jpeg,.png,.webp" />
+        </div>
+
+        <hr />
+        <h5>Cambiar contraseña (opcional)</h5>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Contraseña actual</label>
+            <div class="input-group">
+                <input asp-for="CurrentPassword" class="form-control" id="currentPassword" />
+                <button class="btn btn-outline-secondary" type="button" id="toggleCurrentPassword">Mostrar</button>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Nueva contraseña</label>
+            <div class="input-group">
+                <input asp-for="NewPassword" class="form-control" id="newPassword" />
+                <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword">Mostrar</button>
+            </div>
+            <div class="progress mt-1" style="height:6px;">
+                <div id="strength-bar" class="progress-bar" style="width:0"></div>
+            </div>
+            <small id="strength-text" class="text-muted"></small>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Confirmar nueva contraseña</label>
+            <div class="input-group">
+                <input asp-for="ConfirmPassword" class="form-control" id="confirmPassword" />
+                <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">Mostrar</button>
+            </div>
+        </div>
+
+        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Volver atrás</a>
+        <button class="btn btn-primary">Guardar cambios</button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        wireTogglePassword("toggleCurrentPassword", "currentPassword");
+        wireTogglePassword("toggleNewPassword", "newPassword");
+        wireTogglePassword("toggleConfirmPassword", "confirmPassword");
+        wirePasswordStrengthMeter("newPassword", "strength-bar", "strength-text");
+    </script>
+}

@@ -15,5 +15,9 @@ namespace LinkUpPro.Application.Helpers
         public string UserId { get; set; }
 
         public string Token { get; set; }
+
+        public bool RequiresReLogin { get; set; }
+
+        public int? EntityId { get; set; }
     }
 }

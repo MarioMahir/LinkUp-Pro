@@ -1,0 +1,30 @@
+@model LinkUpPro.Application.ViewModels.BattleshipResultViewModel
+
+<h2>Resultado &mdash; partida contra @Model.OpponentUserName</h2>
+
+<div class="alert @(Model.Won ? "alert-success" : "alert-danger")">
+    @(Model.Won ? "Ganaste esta partida." : "Perdiste esta partida.")
+</div>
+
+<ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#myAttacks">Mi tablero de ataque</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#opponentAttacks">Tablero de ataque del otro jugador</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#myShips">Mi posicionamiento de barcos</button></li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="myAttacks">
+        @{ ViewData["Mode"] = "attack"; }
+        <partial name="_BoardGrid" model="Model.MyAttackBoard" />
+    </div>
+    <div class="tab-pane fade" id="opponentAttacks">
+        @{ ViewData["Mode"] = "attack"; }
+        <partial name="_BoardGrid" model="Model.OpponentAttackBoard" />
+    </div>
+    <div class="tab-pane fade" id="myShips">
+        @{ ViewData["Mode"] = "ships"; }
+        <partial name="_BoardGrid" model="Model.MyShipsBoard" />
+    </div>
+</div>
+
+<a asp-action="Index" class="btn btn-secondary mt-3">Volver atrás</a>

@@ -1,0 +1,11 @@
+@model int
+
+<h2>¿Está seguro que desea rendirse?</h2>
+<p class="text-muted">Si se rinde, la partida contra @ViewData["OpponentUserName"] finalizará y su oponente será declarado ganador.</p>
+
+<form asp-action="Surrender" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="gameId" value="@Model" />
+    <a asp-action="Play" asp-route-id="@Model" class="btn btn-secondary">Cancelar</a>
+    <button type="submit" class="btn btn-danger">Aceptar</button>
+</form>
