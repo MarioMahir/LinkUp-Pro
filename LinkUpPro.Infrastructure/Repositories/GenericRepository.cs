@@ -54,11 +54,21 @@ namespace LinkUpPro.Infrastructure.Repositories
             _dbSet.Remove(entity);
         }
 
+        public async Task ReloadAsync(T entity)
+        {
+            await _context.Entry(entity).ReloadAsync();
+        }
+
         public async Task SaveChangesAsync()
         {
             try
             {
                 await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new ConcurrencyConflictException(
+                    "El recurso fue modificado por una operación concurrente.", ex);
             }
             catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
             {

@@ -2,6 +2,7 @@ using AutoMapper;
 using LinkUpPro.Application.DTOs;
 using LinkUpPro.Application.Helpers;
 using LinkUpPro.Application.Interfaces;
+using LinkUpPro.Application.ViewModels;
 using LinkUpPro.Core.Entities;
 using Microsoft.AspNetCore.Identity;
 
@@ -13,16 +14,49 @@ namespace LinkUpPro.Application.Services
 
         private readonly IPostService _postService;
 
+        private readonly UserManager<ApplicationUser> _userManager;
+
         private readonly IMapper _mapper;
 
         public FriendService(
             IFriendshipRepository friendshipRepository,
             IPostService postService,
+            UserManager<ApplicationUser> userManager,
             IMapper mapper)
         {
             _friendshipRepository = friendshipRepository;
             _postService = postService;
+            _userManager = userManager;
             _mapper = mapper;
+        }
+
+        public async Task<FriendProfileViewModel?> GetFriendProfileAsync(string currentUserId, string targetUserId)
+        {
+            var isFriend = await AreFriendsAsync(currentUserId, targetUserId);
+            var targetUser = await _userManager.FindByIdAsync(targetUserId);
+
+            if (!isFriend || targetUser == null || !targetUser.EmailConfirmed)
+            {
+                return null;
+            }
+
+            return new FriendProfileViewModel
+            {
+                UserId = targetUser.Id,
+                FirstName = targetUser.FirstName,
+                LastName = targetUser.LastName,
+                UserName = targetUser.UserName ?? string.Empty,
+                ProfilePicture = targetUser.ProfilePictureUrl,
+                MutualFriends = await GetMutualFriendsAsync(currentUserId, targetUserId),
+                Posts = _mapper.Map<List<PostViewModel>>(
+                    await _postService.GetFeedByAuthorsAsync(new List<string> { targetUserId }, currentUserId))
+            };
+        }
+
+        public async Task<string?> GetFriendUserNameAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            return user?.UserName;
         }
 
         public async Task<bool> AreFriendsAsync(string userIdA, string userIdB)

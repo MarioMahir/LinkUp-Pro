@@ -1,9 +1,7 @@
-﻿using LinkUpPro.Application.Helpers;
+using LinkUpPro.Application.Helpers;
 using LinkUpPro.Application.Interfaces;
 using LinkUpPro.Application.ViewModels;
 using LinkUpPro.Core.Entities;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 
 namespace LinkUpPro.Application.Services
@@ -12,27 +10,33 @@ namespace LinkUpPro.Application.Services
     {
         private readonly UserManager<ApplicationUser> _userManager;
 
-        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IUserSessionService _userSessionService;
 
         private readonly IEmailService _emailService;
 
         private readonly IFileStorageService _fileStorageService;
 
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILinkBuilderService _linkBuilderService;
 
         public AccountService(
             UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager,
+            IUserSessionService userSessionService,
             IEmailService emailService,
             IFileStorageService fileStorageService,
-            IHttpContextAccessor httpContextAccessor)
+            ILinkBuilderService linkBuilderService)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
+            _userSessionService = userSessionService;
             _emailService = emailService;
             _fileStorageService = fileStorageService;
-            _httpContextAccessor = httpContextAccessor;
+            _linkBuilderService = linkBuilderService;
         }
+
+        private const string GenericLoginError =
+            "El nombre de usuario o la contraseña son incorrectos.";
+
+        private const string LockedOutError =
+            "La cuenta se encuentra bloqueada temporalmente debido a varios intentos fallidos. Inténtelo nuevamente en 15 minutos o restablezca su contraseña.";
 
         public async Task<ServiceResult>
 LoginAsync(LoginViewModel vm)
@@ -46,18 +50,7 @@ LoginAsync(LoginViewModel vm)
                 return new()
                 {
                     Succeeded = false,
-                    Message =
-                    "El nombre de usuario o la contraseña son incorrectos."
-                };
-            }
-
-            if (!user.EmailConfirmed)
-            {
-                return new()
-                {
-                    Succeeded = false,
-                    Message =
-                    "Su cuenta se encuentra inactiva. Debe activarla mediante el enlace enviado a su correo electrónico."
+                    Message = GenericLoginError
                 };
             }
 
@@ -66,8 +59,7 @@ LoginAsync(LoginViewModel vm)
                 return new()
                 {
                     Succeeded = false,
-                    Message =
-                    "La cuenta se encuentra bloqueada temporalmente debido a varios intentos fallidos. Inténtelo nuevamente en 15 minutos o restablezca su contraseña."
+                    Message = LockedOutError
                 };
             }
 
@@ -85,30 +77,34 @@ LoginAsync(LoginViewModel vm)
                     return new()
                     {
                         Succeeded = false,
-                        Message =
-                        "La cuenta se encuentra bloqueada temporalmente debido a varios intentos fallidos. Inténtelo nuevamente en 15 minutos o restablezca su contraseña."
+                        Message = LockedOutError
                     };
                 }
 
                 return new()
                 {
                     Succeeded = false,
+                    Message = GenericLoginError
+                };
+            }
+
+            // La contraseña es correcta: informar del estado inactivo aquí no
+            // permite enumerar usuarios registrados.
+            if (!user.EmailConfirmed)
+            {
+                return new()
+                {
+                    Succeeded = false,
                     Message =
-                    "El nombre de usuario o la contraseña son incorrectos."
+                    "Su cuenta se encuentra inactiva. Debe activarla mediante el enlace enviado a su correo electrónico."
                 };
             }
 
             await _userManager.ResetAccessFailedCountAsync(user);
 
-            var authProperties = new AuthenticationProperties
-            {
-                IsPersistent = vm.RememberMe,
-                ExpiresUtc = vm.RememberMe ? DateTimeOffset.UtcNow.AddDays(7) : null
-            };
-
-            await _signInManager.SignInAsync(
+            await _userSessionService.SignInAsync(
                 user,
-                authProperties);
+                vm.RememberMe);
 
             return new()
             {
@@ -127,7 +123,8 @@ LoginAsync(LoginViewModel vm)
                 UserName = vm.UserName,
                 Email = vm.Email,
                 PhoneNumber = vm.PhoneNumber,
-                ProfilePictureUrl = imagePath
+                ProfilePictureUrl = imagePath,
+                LastActivationRequestDate = DateTime.UtcNow
             };
 
             var result =
@@ -151,16 +148,9 @@ LoginAsync(LoginViewModel vm)
                 .GenerateEmailConfirmationTokenAsync(
                     user);
 
-            var request =
-                _httpContextAccessor
-                .HttpContext
-                .Request;
-
-            var baseUrl =
-                $"{request.Scheme}://{request.Host}";
-
             var link =
-                $"{baseUrl}/Account/ActivateAccount?userId={user.Id}&token={Uri.EscapeDataString(token)}";
+                _linkBuilderService.BuildAbsoluteUrl(
+                    $"/Account/ActivateAccount?userId={user.Id}&token={Uri.EscapeDataString(token)}");
 
             await _emailService.SendEmailAsync(
                 user.Email,
@@ -247,16 +237,9 @@ Activar cuenta
                     .GeneratePasswordResetTokenAsync(
                         user);
 
-                var request =
-                    _httpContextAccessor
-                    .HttpContext
-                    .Request;
-
-                var baseUrl =
-                    $"{request.Scheme}://{request.Host}";
-
                 var link =
-$"{baseUrl}/Account/ResetPassword?userId={user.Id}&token={Uri.EscapeDataString(token)}";
+                    _linkBuilderService.BuildAbsoluteUrl(
+                        $"/Account/ResetPassword?userId={user.Id}&token={Uri.EscapeDataString(token)}");
 
                 await _emailService
                     .SendEmailAsync(
@@ -339,7 +322,7 @@ Restablecer contraseña
 
         public async Task LogoutAsync()
         {
-            await _signInManager
+            await _userSessionService
                 .SignOutAsync();
         }
 
@@ -381,14 +364,9 @@ ResendActivationViewModel vm)
             .GenerateEmailConfirmationTokenAsync(
             user);
 
-            var request =
-            _httpContextAccessor.HttpContext.Request;
-
-            var baseUrl =
-            $"{request.Scheme}://{request.Host}";
-
             var link =
-            $"{baseUrl}/Account/ActivateAccount?userId={user.Id}&token={Uri.EscapeDataString(token)}";
+            _linkBuilderService.BuildAbsoluteUrl(
+            $"/Account/ActivateAccount?userId={user.Id}&token={Uri.EscapeDataString(token)}");
 
             await _emailService
             .SendEmailAsync(

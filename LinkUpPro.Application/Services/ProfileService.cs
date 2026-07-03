@@ -2,7 +2,6 @@ using LinkUpPro.Application.Helpers;
 using LinkUpPro.Application.Interfaces;
 using LinkUpPro.Application.ViewModels;
 using LinkUpPro.Core.Entities;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System.Text.RegularExpressions;
 
@@ -12,7 +11,7 @@ namespace LinkUpPro.Application.Services
     {
         private readonly UserManager<ApplicationUser> _userManager;
 
-        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IUserSessionService _userSessionService;
 
         private readonly IFileStorageService _fileStorageService;
 
@@ -25,11 +24,11 @@ namespace LinkUpPro.Application.Services
 
         public ProfileService(
             UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager,
+            IUserSessionService userSessionService,
             IFileStorageService fileStorageService)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
+            _userSessionService = userSessionService;
             _fileStorageService = fileStorageService;
         }
 
@@ -173,7 +172,7 @@ namespace LinkUpPro.Application.Services
                 }
 
                 await _userManager.UpdateSecurityStampAsync(user);
-                await _signInManager.SignOutAsync();
+                await _userSessionService.SignOutAsync();
 
                 return new ServiceResult
                 {
