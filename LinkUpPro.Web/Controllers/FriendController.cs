@@ -47,9 +47,6 @@ namespace LinkUpPro.Web.Controllers
             vm.TotalFriends = await _friendService.GetFriendsCountAsync(CurrentUserId);
             vm.TotalVisiblePosts = await _friendService.GetVisibleFriendsPostCountAsync(CurrentUserId);
 
-            // Lista completa para el select del buscador de publicaciones, y una
-            // lista aparte (independiente) para el buscador "Buscar amigo..." del
-            // panel lateral, para que no se afecten entre sí.
             vm.AllFriends = await _friendService.GetFriendsAsync(CurrentUserId);
             vm.Friends = await _friendService.GetFriendsAsync(CurrentUserId, vm.FriendSearchText);
 

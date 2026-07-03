@@ -173,7 +173,6 @@ namespace LinkUpPro.Web.Controllers
             return View(vm);
         }
 
-        // Paso 1 del posicionamiento: selección de la celda inicial del barco.
         [HttpGet]
         public async Task<IActionResult> PlaceShip(int id, int length)
         {
@@ -194,7 +193,6 @@ namespace LinkUpPro.Web.Controllers
             return RedirectToAction("SelectDirection", new { id = gameId, length, row, col });
         }
 
-        // Paso 2 del posicionamiento: selección de la dirección a partir de la celda elegida.
         [HttpGet]
         public IActionResult SelectDirection(int id, int length, int row, int col)
         {

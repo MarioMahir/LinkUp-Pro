@@ -18,7 +18,6 @@ namespace LinkUpPro.Application.ViewModels
 
         [Required]
         public string ContentType { get; set; }
-        // Image | YouTube
 
         public IFormFile? ImageFile { get; set; }
 
@@ -28,7 +27,6 @@ namespace LinkUpPro.Application.ViewModels
 
         [Required]
         public string Privacy { get; set; }
-        // Friends | OnlyMe
 
         public bool AllowComments { get; set; } = true;
     }

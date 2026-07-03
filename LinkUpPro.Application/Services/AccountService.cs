@@ -41,7 +41,6 @@ LoginAsync(LoginViewModel vm)
                 await _userManager
                 .FindByNameAsync(vm.UserName);
 
-            // Usuario inexistente
             if (user == null)
             {
                 return new()
@@ -52,7 +51,6 @@ LoginAsync(LoginViewModel vm)
                 };
             }
 
-            // Cuenta inactiva
             if (!user.EmailConfirmed)
             {
                 return new()
@@ -63,7 +61,6 @@ LoginAsync(LoginViewModel vm)
                 };
             }
 
-            // Cuenta bloqueada
             if (await _userManager.IsLockedOutAsync(user))
             {
                 return new()
@@ -74,7 +71,6 @@ LoginAsync(LoginViewModel vm)
                 };
             }
 
-            // Validar contraseña manualmente
             var passwordCorrect =
                 await _userManager.CheckPasswordAsync(
                     user,
@@ -82,10 +78,8 @@ LoginAsync(LoginViewModel vm)
 
             if (!passwordCorrect)
             {
-                // Incrementa intentos fallidos
                 await _userManager.AccessFailedAsync(user);
 
-                // Verifica si se bloqueó
                 if (await _userManager.IsLockedOutAsync(user))
                 {
                     return new()
@@ -104,10 +98,8 @@ LoginAsync(LoginViewModel vm)
                 };
             }
 
-            // Reinicia intentos fallidos
             await _userManager.ResetAccessFailedCountAsync(user);
 
-            // Login real
             var authProperties = new AuthenticationProperties
             {
                 IsPersistent = vm.RememberMe,
@@ -230,8 +222,6 @@ Activar cuenta
 
             if (result.Succeeded)
             {
-                // Invalida el token utilizado (cambia el security stamp) para que
-                // el mismo enlace no pueda volver a usarse.
                 await _userManager.UpdateSecurityStampAsync(user);
             }
 

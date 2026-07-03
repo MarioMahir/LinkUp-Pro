@@ -71,7 +71,6 @@ namespace LinkUpPro.Application.Services
                 return;
             }
 
-            // Operación común de persistencia delegada al servicio genérico.
             await _genericService.AddAsync(new Notification
             {
                 RecipientId = recipientId,
