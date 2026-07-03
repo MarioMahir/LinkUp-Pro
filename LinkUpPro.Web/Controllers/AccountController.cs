@@ -17,7 +17,7 @@ namespace LinkUpPro.Web.Controllers
 
         [AllowAnonymous]
         [HttpGet]
-        public IActionResult Login(string message)
+        public IActionResult Login(string? message)
         {
             if (message == "inactivity")
             {

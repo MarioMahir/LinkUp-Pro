@@ -21,6 +21,8 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IFileStorageService, FileStorageService>();
 builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<IUserSessionService, UserSessionService>();
+builder.Services.AddScoped<ILinkBuilderService, LinkBuilderService>();
 
 builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
@@ -100,7 +102,13 @@ builder.Services.ConfigureApplicationCookie(opt =>
 
     opt.Events.OnRedirectToLogin = context =>
     {
-        context.Response.Redirect("Account/Login?message=inactivity");
+        // Solo se considera "inactividad" si el navegador todavía envía la cookie
+        // de sesión (ticket expirado); un visitante anónimo va al login limpio.
+        var hadSession = context.Request.Cookies.ContainsKey(".AspNetCore.Identity.Application");
+
+        context.Response.Redirect(hadSession
+            ? "/Account/Login?message=inactivity"
+            : "/Account/Login");
 
         return Task.CompletedTask;
     };

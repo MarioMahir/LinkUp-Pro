@@ -17,7 +17,7 @@ namespace LinkUpPro.Application.Services
 
         private readonly IGenericService<Ship> _shipService;
 
-        private readonly IGenericService<Attack> _attackService;
+        private readonly IGenericRepository<Attack> _attackRepository;
 
         private readonly IFriendshipRepository _friendshipRepository;
 
@@ -28,18 +28,21 @@ namespace LinkUpPro.Application.Services
         public BattleshipService(
             IBattleshipRepository battleshipRepository,
             IGenericService<Ship> shipService,
-            IGenericService<Attack> attackService,
+            IGenericRepository<Attack> attackRepository,
             IFriendshipRepository friendshipRepository,
             UserManager<ApplicationUser> userManager,
             IMapper mapper)
         {
             _battleshipRepository = battleshipRepository;
             _shipService = shipService;
-            _attackService = attackService;
+            _attackRepository = attackRepository;
             _friendshipRepository = friendshipRepository;
             _userManager = userManager;
             _mapper = mapper;
         }
+
+        private static bool IsParticipant(BattleshipGame game, string userId) =>
+            game.PlayerOneId == userId || game.PlayerTwoId == userId;
 
         private static ServiceResult Fail(string message) =>
             new() { Succeeded = false, Message = message };
@@ -103,7 +106,17 @@ namespace LinkUpPro.Application.Services
             game.FinishedDate = DateTime.UtcNow;
 
             _battleshipRepository.Update(game);
-            await _battleshipRepository.SaveChangesAsync();
+
+            try
+            {
+                await _battleshipRepository.SaveChangesAsync();
+            }
+            catch (LinkUpPro.Application.Exceptions.ConcurrencyConflictException)
+            {
+                // Otra operación actualizó la partida al mismo tiempo; se recarga
+                // y el abandono se re-evaluará en la próxima consulta.
+                await _battleshipRepository.ReloadAsync(game);
+            }
         }
 
         public async Task<List<BattleshipGameSummaryDto>> GetActiveGamesAsync(string userId)
@@ -274,7 +287,15 @@ namespace LinkUpPro.Application.Services
             game.FinishedDate = DateTime.UtcNow;
 
             _battleshipRepository.Update(game);
-            await _battleshipRepository.SaveChangesAsync();
+
+            try
+            {
+                await _battleshipRepository.SaveChangesAsync();
+            }
+            catch (LinkUpPro.Application.Exceptions.ConcurrencyConflictException)
+            {
+                return Fail("La partida fue actualizada por otra operación. Refresque la pantalla e intente nuevamente.");
+            }
 
             return new ServiceResult { Succeeded = true, Message = "Se ha rendido. La partida ha finalizado." };
         }
@@ -310,7 +331,7 @@ namespace LinkUpPro.Application.Services
         {
             var game = await _battleshipRepository.GetByIdWithDetailsAsync(gameId);
 
-            if (game == null)
+            if (game == null || !IsParticipant(game, userId))
             {
                 return new List<ShipOptionDto>();
             }
@@ -334,7 +355,7 @@ namespace LinkUpPro.Application.Services
             var board = CreateEmptyBoard();
             var game = await _battleshipRepository.GetByIdWithDetailsAsync(gameId);
 
-            if (game == null)
+            if (game == null || !IsParticipant(game, userId))
             {
                 return board;
             }
@@ -445,24 +466,38 @@ namespace LinkUpPro.Application.Services
 
             if (totalPlaced == RequiredShipLengths.Length)
             {
-                if (isPlayerOne)
+                // Ambos jugadores pueden terminar su configuración al mismo tiempo;
+                // si el guardado choca por concurrencia, se recarga y se reintenta.
+                for (var attempt = 0; attempt < 3; attempt++)
                 {
-                    game.PlayerOneShipsReady = true;
-                }
-                else
-                {
-                    game.PlayerTwoShipsReady = true;
-                }
+                    if (isPlayerOne)
+                    {
+                        game.PlayerOneShipsReady = true;
+                    }
+                    else
+                    {
+                        game.PlayerTwoShipsReady = true;
+                    }
 
-                if (game.PlayerOneShipsReady && game.PlayerTwoShipsReady)
-                {
-                    game.Status = "Attacking";
-                    game.CurrentTurnUserId = game.PlayerOneId;
-                    game.TurnAssignedDate = DateTime.UtcNow;
-                }
+                    if (game.PlayerOneShipsReady && game.PlayerTwoShipsReady)
+                    {
+                        game.Status = "Attacking";
+                        game.CurrentTurnUserId = game.PlayerOneId;
+                        game.TurnAssignedDate = DateTime.UtcNow;
+                    }
 
-                _battleshipRepository.Update(game);
-                await _battleshipRepository.SaveChangesAsync();
+                    _battleshipRepository.Update(game);
+
+                    try
+                    {
+                        await _battleshipRepository.SaveChangesAsync();
+                        break;
+                    }
+                    catch (LinkUpPro.Application.Exceptions.ConcurrencyConflictException)
+                    {
+                        await _battleshipRepository.ReloadAsync(game);
+                    }
+                }
             }
 
             return new ServiceResult { Succeeded = true, Message = "El barco fue posicionado correctamente." };
@@ -473,7 +508,7 @@ namespace LinkUpPro.Application.Services
             var board = CreateEmptyBoard();
             var game = await _battleshipRepository.GetByIdWithDetailsAsync(gameId);
 
-            if (game == null)
+            if (game == null || !IsParticipant(game, userId))
             {
                 return board;
             }
@@ -543,27 +578,15 @@ namespace LinkUpPro.Application.Services
 
             var wasHit = opponentCells.Contains((row, col));
 
-            try
-            {
-                await _attackService.AddAsync(new Attack
-                {
-                    GameId = gameId,
-                    AttackerId = userId,
-                    Row = row,
-                    Col = col,
-                    WasHit = wasHit,
-                    CreatedDate = DateTime.UtcNow
-                });
-            }
-            catch (LinkUpPro.Application.Exceptions.ConcurrencyConflictException)
-            {
-                return Fail("Esta celda ya fue atacada.");
-            }
-
-            var allMyHits = (await _attackService.FindAsync(
-                    a => a.GameId == gameId && a.AttackerId == userId && a.WasHit))
+            var allMyHits = game.Attacks
+                .Where(a => a.AttackerId == userId && a.WasHit)
                 .Select(a => (a.Row, a.Col))
                 .ToHashSet();
+
+            if (wasHit)
+            {
+                allMyHits.Add((row, col));
+            }
 
             var won = opponentCells.Count > 0 && opponentCells.All(c => allMyHits.Contains(c));
 
@@ -580,8 +603,28 @@ namespace LinkUpPro.Application.Services
                 game.TurnAssignedDate = DateTime.UtcNow;
             }
 
+            // El ataque y el cambio de turno se guardan en una sola operación:
+            // el RowVersion de la partida bloquea ataques concurrentes duplicados.
+            await _attackRepository.AddAsync(new Attack
+            {
+                GameId = gameId,
+                AttackerId = userId,
+                Row = row,
+                Col = col,
+                WasHit = wasHit,
+                CreatedDate = DateTime.UtcNow
+            });
+
             _battleshipRepository.Update(game);
-            await _battleshipRepository.SaveChangesAsync();
+
+            try
+            {
+                await _battleshipRepository.SaveChangesAsync();
+            }
+            catch (LinkUpPro.Application.Exceptions.ConcurrencyConflictException)
+            {
+                return Fail("No es su turno de atacar o la celda ya fue atacada. Refresque la pantalla.");
+            }
 
             return new ServiceResult
             {

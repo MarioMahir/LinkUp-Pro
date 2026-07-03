@@ -2,10 +2,9 @@ using AutoMapper;
 using LinkUpPro.Application.DTOs;
 using LinkUpPro.Application.Interfaces;
 using LinkUpPro.Application.ViewModels;
-using LinkUpPro.Core.Entities;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace LinkUpPro.Web.Controllers
 {
@@ -16,27 +15,19 @@ namespace LinkUpPro.Web.Controllers
 
         private readonly IFriendRequestService _friendRequestService;
 
-        private readonly IPostService _postService;
-
-        private readonly UserManager<ApplicationUser> _userManager;
-
         private readonly IMapper _mapper;
 
         public FriendController(
             IFriendService friendService,
             IFriendRequestService friendRequestService,
-            IPostService postService,
-            UserManager<ApplicationUser> userManager,
             IMapper mapper)
         {
             _friendService = friendService;
             _friendRequestService = friendRequestService;
-            _postService = postService;
-            _userManager = userManager;
             _mapper = mapper;
         }
 
-        private string CurrentUserId => _userManager.GetUserId(User)!;
+        private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
         [HttpGet]
         public async Task<IActionResult> Index(FriendFeedViewModel vm)
@@ -99,10 +90,9 @@ namespace LinkUpPro.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Profile(string userId)
         {
-            var isFriend = await _friendService.AreFriendsAsync(CurrentUserId, userId);
-            var targetUser = await _userManager.FindByIdAsync(userId);
+            var vm = await _friendService.GetFriendProfileAsync(CurrentUserId, userId);
 
-            if (!isFriend || targetUser == null || !targetUser.EmailConfirmed)
+            if (vm == null)
             {
                 TempData["Error"] = "No posee permisos para visualizar el perfil de este usuario.";
                 return RedirectToAction("Index");
@@ -111,30 +101,18 @@ namespace LinkUpPro.Web.Controllers
             ViewData["CurrentUserId"] = CurrentUserId;
             ViewData["ReturnUrl"] = Url.Action("Profile", new { userId });
 
-            var vm = new FriendProfileViewModel
-            {
-                UserId = targetUser.Id,
-                FirstName = targetUser.FirstName,
-                LastName = targetUser.LastName,
-                UserName = targetUser.UserName ?? string.Empty,
-                ProfilePicture = targetUser.ProfilePictureUrl,
-                MutualFriends = await _friendService.GetMutualFriendsAsync(CurrentUserId, userId),
-                Posts = _mapper.Map<List<PostViewModel>>(
-                    await _postService.GetFeedByAuthorsAsync(new List<string> { userId }, CurrentUserId))
-            };
-
             return View(vm);
         }
 
         [HttpGet]
         public async Task<IActionResult> RemoveFriendConfirm(string friendId)
         {
-            var friend = await _userManager.FindByIdAsync(friendId);
+            var friendUserName = await _friendService.GetFriendUserNameAsync(friendId);
 
             var vm = new ConfirmActionViewModel
             {
                 Title = "Eliminar amigo",
-                Message = $"¿Está seguro que desea eliminar de sus amigos al usuario {friend?.UserName}?",
+                Message = $"¿Está seguro que desea eliminar de sus amigos al usuario {friendUserName}?",
                 FormController = "Friend",
                 FormAction = "RemoveFriend",
                 HiddenFields = new Dictionary<string, string> { ["friendId"] = friendId },

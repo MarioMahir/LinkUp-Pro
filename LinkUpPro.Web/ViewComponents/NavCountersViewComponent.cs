@@ -1,7 +1,6 @@
 using LinkUpPro.Application.Interfaces;
-using LinkUpPro.Core.Entities;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace LinkUpPro.Web.ViewComponents
 {
@@ -11,21 +10,17 @@ namespace LinkUpPro.Web.ViewComponents
 
         private readonly INotificationService _notificationService;
 
-        private readonly UserManager<ApplicationUser> _userManager;
-
         public NavCountersViewComponent(
             IFriendRequestService friendRequestService,
-            INotificationService notificationService,
-            UserManager<ApplicationUser> userManager)
+            INotificationService notificationService)
         {
             _friendRequestService = friendRequestService;
             _notificationService = notificationService;
-            _userManager = userManager;
         }
 
         public async Task<IViewComponentResult> InvokeAsync(string type)
         {
-            var userId = _userManager.GetUserId(UserClaimsPrincipal);
+            var userId = UserClaimsPrincipal?.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (string.IsNullOrEmpty(userId))
             {

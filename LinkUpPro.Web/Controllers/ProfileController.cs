@@ -1,9 +1,8 @@
 using LinkUpPro.Application.Interfaces;
 using LinkUpPro.Application.ViewModels;
-using LinkUpPro.Core.Entities;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace LinkUpPro.Web.Controllers
 {
@@ -12,17 +11,13 @@ namespace LinkUpPro.Web.Controllers
     {
         private readonly IProfileService _profileService;
 
-        private readonly UserManager<ApplicationUser> _userManager;
-
         public ProfileController(
-            IProfileService profileService,
-            UserManager<ApplicationUser> userManager)
+            IProfileService profileService)
         {
             _profileService = profileService;
-            _userManager = userManager;
         }
 
-        private string CurrentUserId => _userManager.GetUserId(User)!;
+        private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
         [HttpGet]
         public async Task<IActionResult> Index()
