@@ -38,6 +38,16 @@ namespace LinkUpPro.Infrastructure.Persistence
         {
             base.OnModelCreating(builder);
 
+            // Identity no impone unicidad de correo a nivel de BD por defecto (solo
+            // el username); esto la fuerza, alineado con RequireUniqueEmail en
+            // Program.cs, reconfigurando el índice "EmailIndex" que Identity ya
+            // define (no único) para que sea único.
+            builder.Entity<ApplicationUser>()
+                .HasIndex(u => u.NormalizedEmail)
+                .HasDatabaseName("EmailIndex")
+                .IsUnique()
+                .HasFilter("[NormalizedEmail] IS NOT NULL");
+
             builder.Entity<Comment>()
                 .HasOne(c => c.Post)
                 .WithMany(p => p.Comments)

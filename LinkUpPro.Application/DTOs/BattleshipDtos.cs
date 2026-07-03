@@ -11,6 +11,10 @@ namespace LinkUpPro.Application.DTOs
         public bool IsAttacked { get; set; }
 
         public bool WasHit { get; set; }
+
+        // Indica si el barco al que pertenece esta celda ha sido hundido en
+        // su totalidad (todas sus posiciones fueron impactadas).
+        public bool IsSunk { get; set; }
     }
 
     public class BattleshipGameSummaryDto

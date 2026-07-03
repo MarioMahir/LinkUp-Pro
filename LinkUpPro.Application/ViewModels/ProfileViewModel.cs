@@ -12,6 +12,8 @@ namespace LinkUpPro.Application.ViewModels
         public string LastName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Debe ingresar un número telefónico válido de República Dominicana.")]
+        [RegularExpression(@"^(809|829|849)-\d{3}-\d{4}$",
+            ErrorMessage = "Debe ingresar un número telefónico válido de República Dominicana.")]
         public string PhoneNumber { get; set; } = string.Empty;
 
         public string? Email { get; set; }

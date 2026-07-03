@@ -5,6 +5,7 @@ using LinkUpPro.Core.Entities;
 using LinkUpPro.Infrastructure.Persistence;
 using LinkUpPro.Infrastructure.Repositories;
 using LinkUpPro.Shared.Services;
+using LinkUpPro.Web.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -64,9 +65,24 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
     opt.SignIn.RequireConfirmedEmail = true;
 
     opt.User.RequireUniqueEmail = true;
+
+    // Proveedores dedicados para poder configurar una vigencia distinta para
+    // el token de activación (24 horas) y el de restablecimiento de
+    // contraseña (1 hora); por defecto ambos comparten el mismo proveedor.
+    opt.Tokens.EmailConfirmationTokenProvider = "EmailConfirmationTokenProvider";
+
+    opt.Tokens.PasswordResetTokenProvider = "PasswordResetTokenProvider";
 })
 .AddEntityFrameworkStores<AppDbContext>()
-.AddDefaultTokenProviders();
+.AddDefaultTokenProviders()
+.AddTokenProvider<EmailConfirmationTokenProvider<ApplicationUser>>("EmailConfirmationTokenProvider")
+.AddTokenProvider<PasswordResetTokenProvider<ApplicationUser>>("PasswordResetTokenProvider");
+
+builder.Services.Configure<EmailConfirmationTokenProviderOptions>(opt =>
+    opt.TokenLifespan = TimeSpan.FromHours(24));
+
+builder.Services.Configure<PasswordResetTokenProviderOptions>(opt =>
+    opt.TokenLifespan = TimeSpan.FromHours(1));
 
 builder.Services.ConfigureApplicationCookie(opt =>
 {

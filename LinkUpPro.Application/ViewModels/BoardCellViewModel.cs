@@ -11,5 +11,7 @@ namespace LinkUpPro.Application.ViewModels
         public bool IsAttacked { get; set; }
 
         public bool WasHit { get; set; }
+
+        public bool IsSunk { get; set; }
     }
 }

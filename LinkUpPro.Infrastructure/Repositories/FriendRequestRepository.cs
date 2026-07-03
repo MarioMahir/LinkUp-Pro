@@ -44,5 +44,17 @@ namespace LinkUpPro.Infrastructure.Repositories
                 .OrderByDescending(r => r.SentDate)
                 .ToListAsync();
         }
+
+        public async Task<List<FriendRequest>> GetVisibleReceivedHistoryAsync(string userId)
+        {
+            return await _context.FriendRequests
+                .Include(r => r.Sender)
+                .Where(r =>
+                    r.ReceiverId == userId &&
+                    (r.Status == "Accepted" || r.Status == "Rejected") &&
+                    !r.IsHiddenFromReceiver)
+                .OrderByDescending(r => r.RespondedDate ?? r.SentDate)
+                .ToListAsync();
+        }
     }
 }

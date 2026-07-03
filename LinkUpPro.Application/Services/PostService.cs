@@ -85,6 +85,11 @@ namespace LinkUpPro.Application.Services
                 {
                     return Fail("La imagen no puede superar los 5 MB.");
                 }
+
+                if (!FileSignatureValidator.HasValidImageSignature(vm.ImageFile))
+                {
+                    return Fail("El archivo seleccionado no tiene un formato de imagen válido.");
+                }
             }
 
             if (vm.ContentType == "YouTube")
@@ -547,6 +552,8 @@ namespace LinkUpPro.Application.Services
 
             var existing = await _reactionRepository.GetByUserAndPostAsync(userId, postId);
             var wasNew = existing == null;
+            var previousIsLike = existing?.IsLike;
+            var reactionChanged = existing != null && previousIsLike != isLike;
 
             if (existing != null)
             {
@@ -565,7 +572,10 @@ namespace LinkUpPro.Application.Services
 
             await _reactionRepository.SaveChangesAsync();
 
-            if (wasNew)
+            // Se notifica tanto al registrar una reacción nueva como al
+            // cambiarla (Me gusta <-> No me gusta), pero nunca al eliminarla
+            // ni al volver a marcar la misma reacción ya existente.
+            if (wasNew || reactionChanged)
             {
                 await _notificationService.CreateAsync(
                     post.UserId, userId, "Reaction", postId, null, isLike);

@@ -31,7 +31,7 @@
                     <div class="col-md-3">
                         <select asp-for="FriendUserId" class="form-select">
                             <option value="">Todos los amigos</option>
-                            @foreach (var f in Model.Friends)
+                            @foreach (var f in Model.AllFriends)
                             {
                                 <option value="@f.UserId">@f.UserName</option>
                             }
@@ -58,7 +58,7 @@
             </div>
         </div>
 
-        @if (Model.Friends.Count == 0)
+        @if (Model.TotalFriends == 0)
         {
             <div class="alert alert-info">Todavía no tiene amigos agregados.</div>
         }

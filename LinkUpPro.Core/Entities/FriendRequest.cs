@@ -22,6 +22,8 @@ namespace LinkUpPro.Core.Entities
 
         public bool IsHiddenFromSender { get; set; }
 
+        public bool IsHiddenFromReceiver { get; set; }
+
         public DateTime SentDate { get; set; } = DateTime.UtcNow;
 
         public DateTime? RespondedDate { get; set; }

@@ -9,17 +9,30 @@
         <div>
             <h4 class="mb-0">@Model.FirstName @Model.LastName</h4>
             <div class="text-muted">@Model.UserName</div>
-            <div class="small">@Model.MutualFriends.Count amigo(s) en común</div>
+            @if (Model.MutualFriends.Count > 0)
+            {
+                <button type="button" class="btn btn-link btn-sm p-0 small" data-bs-toggle="collapse" data-bs-target="#mutualFriendsList">
+                    @Model.MutualFriends.Count amigo(s) en común
+                </button>
+            }
+            else
+            {
+                <div class="small">@Model.MutualFriends.Count amigo(s) en común</div>
+            }
         </div>
     </div>
 </div>
 
-@if (Model.MutualFriends.Count > 0)
-{
-    <div class="card mb-3">
-        <div class="card-header">Amigos en común</div>
-        <div class="card-body d-flex flex-wrap gap-3">
-            @foreach (var m in Model.MutualFriends)
+<div class="card mb-3 collapse" id="mutualFriendsList">
+    <div class="card-header">Amigos en común</div>
+    <div class="card-body d-flex flex-wrap gap-3">
+        @if (Model.MutualFriends.Count == 0)
+        {
+            <span class="text-muted">No tienen amigos en común.</span>
+        }
+        else
+        {
+            foreach (var m in Model.MutualFriends)
             {
                 <a asp-action="Profile" asp-route-userId="@m.UserId" class="text-decoration-none text-center" style="width:80px;">
                     <img src="@(string.IsNullOrEmpty(m.ProfilePicture) ? "/images/default-avatar.svg" : m.ProfilePicture)"
@@ -27,9 +40,9 @@
                     <div class="small">@m.UserName</div>
                 </a>
             }
-        </div>
+        }
     </div>
-}
+</div>
 
 @if (Model.Posts.Count == 0)
 {

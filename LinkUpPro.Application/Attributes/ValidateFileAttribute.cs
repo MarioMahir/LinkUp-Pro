@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using LinkUpPro.Application.Helpers;
 using Microsoft.AspNetCore.Http;
 using System.IO;
 using System.Linq;
@@ -24,13 +25,18 @@ namespace LinkUpPro.Application.Attributes
 
                 if (!_allowedExtensions.Contains(extension))
                 {
-                    return new ValidationResult($"El formato de la imagen no es v�lido. Formatos permitidos: {string.Join(", ", _allowedExtensions)}.");
+                    return new ValidationResult($"El formato de la imagen no es válido. Formatos permitidos: {string.Join(", ", _allowedExtensions)}.");
                 }
 
                 var fileSizeMb = file.Length / 1024f / 1024f;
                 if (fileSizeMb > _maxFileSizeMb)
                 {
-                    return new ValidationResult($"El tama�o de la imagen excede el l�mite m�ximo de {_maxFileSizeMb} MB.");
+                    return new ValidationResult($"El tamaño de la imagen excede el límite máximo de {_maxFileSizeMb} MB.");
+                }
+
+                if (!FileSignatureValidator.HasValidImageSignature(file))
+                {
+                    return new ValidationResult("El archivo seleccionado no tiene un formato de imagen válido.");
                 }
             }
 
