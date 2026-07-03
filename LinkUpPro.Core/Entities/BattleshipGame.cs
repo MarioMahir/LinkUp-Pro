@@ -13,11 +13,7 @@ namespace LinkUpPro.Core.Entities
         public ApplicationUser PlayerTwo { get; set; }
 
         public string Status { get; set; } = "SettingUp";
-        // SettingUp | Attacking | Finished
 
-        // Combinación ordenada de ambos jugadores, usada por un índice único
-        // filtrado para impedir más de una partida activa simultánea entre
-        // los mismos dos usuarios bajo condiciones de concurrencia.
         public string PairKey { get; set; } = string.Empty;
 
         public bool PlayerOneShipsReady { get; set; }
@@ -31,7 +27,6 @@ namespace LinkUpPro.Core.Entities
         public string? WinnerId { get; set; }
 
         public string? FinishReason { get; set; }
-        // Won | Surrendered | Forfeited
 
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
 

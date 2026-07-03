@@ -13,7 +13,6 @@ namespace LinkUpPro.Core.Entities
         public ApplicationUser Actor { get; set; }
 
         public string Type { get; set; }
-        // Comment | Reply | Reaction
 
         public bool? ReactionIsLike { get; set; }
 

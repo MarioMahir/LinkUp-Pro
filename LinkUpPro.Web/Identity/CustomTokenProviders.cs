@@ -4,12 +4,6 @@ using Microsoft.Extensions.Options;
 
 namespace LinkUpPro.Web.Identity
 {
-    // Los tokens de activación y de restablecimiento de contraseña comparten,
-    // por defecto, el mismo proveedor ("Default") de ASP.NET Core Identity y por lo
-    // tanto la misma vigencia. Estos dos proveedores permiten diferenciar la
-    // vigencia de cada tipo de token según lo exige el documento funcional:
-    // activación 24 horas, restablecimiento de contraseña 1 hora.
-
     public class EmailConfirmationTokenProviderOptions : DataProtectionTokenProviderOptions
     {
         public EmailConfirmationTokenProviderOptions()

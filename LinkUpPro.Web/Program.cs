@@ -11,7 +11,6 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddAutoMapper(typeof(PostProfile).Assembly);
 
@@ -66,9 +65,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
 
     opt.User.RequireUniqueEmail = true;
 
-    // Proveedores dedicados para poder configurar una vigencia distinta para
-    // el token de activación (24 horas) y el de restablecimiento de
-    // contraseña (1 hora); por defecto ambos comparten el mismo proveedor.
     opt.Tokens.EmailConfirmationTokenProvider = "EmailConfirmationTokenProvider";
 
     opt.Tokens.PasswordResetTokenProvider = "PasswordResetTokenProvider";
@@ -113,14 +109,10 @@ builder.Services.ConfigureApplicationCookie(opt =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-// Se usa el mismo manejador de excepciones genérico en todos los ambientes
-// para garantizar que nunca se revele información técnica al usuario final.
 app.UseExceptionHandler("/Home/Error");
 
 if (!app.Environment.IsDevelopment())
 {
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 

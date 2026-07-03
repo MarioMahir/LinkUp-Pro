@@ -61,8 +61,6 @@ namespace LinkUpPro.Application.Services
             return board;
         }
 
-        // Marca como hundidas (IsSunk) las celdas de todo barco cuyas posiciones
-        // hayan sido impactadas en su totalidad.
         private static void MarkSunkShips(
             List<List<BoardCellDto>> board,
             IEnumerable<Ship> ships,
@@ -250,7 +248,6 @@ namespace LinkUpPro.Application.Services
             }
             catch (LinkUpPro.Application.Exceptions.ConcurrencyConflictException)
             {
-                // Otra partida concurrente ya fue creada entre los mismos dos usuarios.
                 return Fail("Ya existe una partida activa con este usuario.");
             }
 

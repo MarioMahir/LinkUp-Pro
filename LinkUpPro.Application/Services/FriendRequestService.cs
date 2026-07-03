@@ -218,7 +218,6 @@ namespace LinkUpPro.Application.Services
             }
             catch (LinkUpPro.Application.Exceptions.ConcurrencyConflictException)
             {
-                // Otra solicitud concurrente ya insertó el mismo par en espera de respuesta.
                 return Fail("Ya existe una solicitud de amistad pendiente entre ambos usuarios.");
             }
 
