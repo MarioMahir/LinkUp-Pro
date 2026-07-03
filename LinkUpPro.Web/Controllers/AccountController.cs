@@ -15,8 +15,6 @@ namespace LinkUpPro.Web.Controllers
             _accountService = accountService;
         }
 
-        // LOGIN
-
         [AllowAnonymous]
         [HttpGet]
         public IActionResult Login(string message)
@@ -60,8 +58,6 @@ namespace LinkUpPro.Web.Controllers
                 "Index",
                 "Home");
         }
-
-        // REGISTER
 
         [AllowAnonymous]
         [HttpGet]
@@ -108,8 +104,6 @@ namespace LinkUpPro.Web.Controllers
                 "Login");
         }
 
-        // ACTIVAR CUENTA
-
         [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult>
@@ -149,8 +143,6 @@ namespace LinkUpPro.Web.Controllers
                 "Login");
         }
 
-        // FORGOT PASSWORD
-
         [AllowAnonymous]
         [HttpGet]
         public IActionResult ForgotPassword()
@@ -185,8 +177,6 @@ namespace LinkUpPro.Web.Controllers
             return RedirectToAction(
                 "Login");
         }
-
-        // RESET PASSWORD
 
         [AllowAnonymous]
         [HttpGet]
@@ -239,8 +229,6 @@ namespace LinkUpPro.Web.Controllers
             return RedirectToAction(
                 "Login");
         }
-
-        // LOGOUT
 
         [Authorize]
         [HttpPost]

@@ -22,10 +22,7 @@ There are no test projects in the solution currently.
 The app requires a local SQL Server instance reachable via the `DefaultConnection` string in
 `LinkUpPro.Web/appsettings.json` (`Server=.;Database=LinkUpProDb;...`), and outbound SMTP
 (Gmail) for `EmailSettings` — account registration/activation/password-reset emails will fail
-without valid credentials there. `EmailSettings:Email`/`Password` are committed directly in
-`appsettings.json`/`appsettings.Development.json` — intentional, since this repo stays private
-and is only ever distributed as a zip, never shared as a repo/collaborator invite (do not push
-this repo to a public host without first blanking those values again).
+without valid credentials there.
 
 ## Architecture
 
@@ -51,18 +48,12 @@ directly.
   extension/size checks).
 - **LinkUpPro.Infrastructure** — EF Core `AppDbContext` (`IdentityDbContext<ApplicationUser>`,
   `Persistence/`) with all delete behaviors set to `NoAction` (cascades are handled in code, not
-  by SQL Server), a generic `Repository Pattern` (`GenericRepository<T>`) plus feature-specific
-  repositories (`PostRepository`, `FriendshipRepository`, `FriendRequestRepository`,
-  `NotificationRepository`, `BattleshipRepository`, `CommentRepository`,
-  `PostReactionRepository`), and `Migrations/`.
+  by SQL Server), `Repositories/` (`PostRepository`), `Migrations/`, and infra service
+  implementations (`Services/EmailService` via MailKit/MimeKit).
 - **LinkUpPro.Web** — `Controllers/`, Razor `Views/`, `Program.cs` (DI registration, ASP.NET
-  Identity configuration — including two named token providers with distinct lifespans for
-  activation vs. password-reset tokens, see `Identity/CustomTokenProviders.cs` — and auth cookie
-  config). `HomeController` is `[Authorize]`-gated; `AccountController` holds
-  login/register/activation/forgot-reset-password/logout/resend-activation.
-- **LinkUpPro.Shared** — cross-cutting infrastructure used across layers: `Services/EmailService`
-  (SMTP via MailKit/MimeKit), `Services/EmailSettings`, `Services/FileStorageService` (saves
-  uploads under `wwwroot/images/{users,posts}/`).
+  Identity configuration, auth cookie config). `HomeController` is `[Authorize]`-gated;
+  `AccountController` holds login/register/activation/forgot-reset-password/logout/resend-activation.
+- **LinkUpPro.Shared** — currently empty, reserved for cross-cutting code shared beyond Core.
 
 ### Conventions to follow
 

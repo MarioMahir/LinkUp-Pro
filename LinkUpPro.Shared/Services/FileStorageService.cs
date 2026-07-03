@@ -39,7 +39,7 @@ namespace LinkUpPro.Shared.Services
 
             if (File.Exists(path))
             {
-                try { File.Delete(path); } catch { /* best effort */ }
+                try { File.Delete(path); } catch { }
             }
         }
     }

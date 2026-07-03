@@ -41,6 +41,15 @@ namespace LinkUpPro.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Index(ProfileViewModel vm)
         {
+            if (!ModelState.IsValid)
+            {
+                var currentForInvalidModel = await _profileService.GetProfileAsync(CurrentUserId);
+                vm.CurrentProfilePictureUrl = currentForInvalidModel?.CurrentProfilePictureUrl;
+                vm.Email = currentForInvalidModel?.Email;
+                vm.UserName = currentForInvalidModel?.UserName;
+                return View(vm);
+            }
+
             var result = await _profileService.UpdateProfileAsync(vm, CurrentUserId);
 
             if (!result.Succeeded)

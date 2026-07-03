@@ -56,10 +56,23 @@
     var contentType = document.getElementById("contentType");
     var image = document.getElementById("imageSection");
     var youtube = document.getElementById("youtubeSection");
+    var imageInput = document.getElementById("ImageFile");
+    var youtubeInput = document.getElementById("YoutubeUrl");
+
     function toggleSections() {
         image.style.display = contentType.value === "Image" ? "block" : "none";
         youtube.style.display = contentType.value === "YouTube" ? "block" : "none";
     }
-    contentType.addEventListener("change", toggleSections);
+
+    function onContentTypeChanged() {
+        toggleSections();
+        if (contentType.value === "Image") {
+            if (youtubeInput) youtubeInput.value = "";
+        } else if (contentType.value === "YouTube") {
+            if (imageInput) imageInput.value = "";
+        }
+    }
+
+    contentType.addEventListener("change", onContentTypeChanged);
     toggleSections();
 </script>

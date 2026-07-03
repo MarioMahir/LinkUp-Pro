@@ -24,6 +24,8 @@ namespace LinkUpPro.Application.ViewModels
 
         public List<PostViewModel> Posts { get; set; } = new();
 
+        public List<FriendDto> AllFriends { get; set; } = new();
+
         public List<FriendDto> Friends { get; set; } = new();
     }
 }

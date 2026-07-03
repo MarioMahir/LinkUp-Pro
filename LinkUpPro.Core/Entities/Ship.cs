@@ -17,7 +17,6 @@ namespace LinkUpPro.Core.Entities
         public int StartCol { get; set; }
 
         public string Direction { get; set; }
-        // Up | Down | Left | Right
 
         public IEnumerable<(int Row, int Col)> GetOccupiedCells()
         {

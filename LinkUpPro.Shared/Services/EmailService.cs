@@ -43,11 +43,6 @@ namespace LinkUpPro.Shared.Services
 
                 using var client = new SmtpClient
                 {
-                    // Algunas redes bloquean las consultas OCSP/CRL salientes,
-                    // lo que hace que .NET no pueda confirmar el estado de
-                    // revocación de un certificado por lo demás válido. Esto
-                    // desactiva únicamente esa comprobación puntual, no la
-                    // validación de la cadena de confianza ni del hostname.
                     CheckCertificateRevocation = false
                 };
 

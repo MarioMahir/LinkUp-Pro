@@ -14,14 +14,12 @@ namespace LinkUpPro.Core.Entities
         public string Content { get; set; }
 
         public string ContentType { get; set; }
-        // Image | YouTube
 
         public string? ImageUrl { get; set; }
 
         public string? YoutubeUrl { get; set; }
 
         public string Privacy { get; set; }
-        // Friends | OnlyMe
 
         public bool AllowComments { get; set; }
 

@@ -9,6 +9,8 @@ namespace LinkUpPro.Application.Interfaces
 
         Task<List<FriendRequestDto>> GetSentAsync(string userId);
 
+        Task<List<FriendRequestDto>> GetReceivedHistoryAsync(string userId);
+
         Task<int> GetPendingCountAsync(string userId);
 
         Task<List<FriendDto>> GetAvailableUsersAsync(string userId, string? search = null);
@@ -22,5 +24,7 @@ namespace LinkUpPro.Application.Interfaces
         Task<ServiceResult> CancelRequestAsync(int requestId, string currentUserId);
 
         Task<ServiceResult> HideFromHistoryAsync(int requestId, string currentUserId);
+
+        Task<ServiceResult> HideFromReceiverHistoryAsync(int requestId, string currentUserId);
     }
 }

@@ -25,5 +25,7 @@ namespace LinkUpPro.Application.ViewModels
         public int PendingRequestsCount { get; set; }
 
         public int UnreadNotificationsCount { get; set; }
+
+        public bool HasFilter { get; set; }
     }
 }

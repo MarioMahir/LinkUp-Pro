@@ -5,12 +5,12 @@ using LinkUpPro.Core.Entities;
 using LinkUpPro.Infrastructure.Persistence;
 using LinkUpPro.Infrastructure.Repositories;
 using LinkUpPro.Shared.Services;
+using LinkUpPro.Web.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddAutoMapper(typeof(PostProfile).Assembly);
 
@@ -64,9 +64,21 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
     opt.SignIn.RequireConfirmedEmail = true;
 
     opt.User.RequireUniqueEmail = true;
+
+    opt.Tokens.EmailConfirmationTokenProvider = "EmailConfirmationTokenProvider";
+
+    opt.Tokens.PasswordResetTokenProvider = "PasswordResetTokenProvider";
 })
 .AddEntityFrameworkStores<AppDbContext>()
-.AddDefaultTokenProviders();
+.AddDefaultTokenProviders()
+.AddTokenProvider<EmailConfirmationTokenProvider<ApplicationUser>>("EmailConfirmationTokenProvider")
+.AddTokenProvider<PasswordResetTokenProvider<ApplicationUser>>("PasswordResetTokenProvider");
+
+builder.Services.Configure<EmailConfirmationTokenProviderOptions>(opt =>
+    opt.TokenLifespan = TimeSpan.FromHours(24));
+
+builder.Services.Configure<PasswordResetTokenProviderOptions>(opt =>
+    opt.TokenLifespan = TimeSpan.FromHours(1));
 
 builder.Services.ConfigureApplicationCookie(opt =>
 {
@@ -97,14 +109,10 @@ builder.Services.ConfigureApplicationCookie(opt =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-// Se usa el mismo manejador de excepciones genérico en todos los ambientes
-// para garantizar que nunca se revele información técnica al usuario final.
 app.UseExceptionHandler("/Home/Error");
 
 if (!app.Environment.IsDevelopment())
 {
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 

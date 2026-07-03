@@ -9,13 +9,23 @@
 
 <div class="mt-2" style="margin-left:@(depth * 24)px;">
     <div class="d-flex">
-        <img src="@(string.IsNullOrEmpty(Model.ProfilePicture) ? "/images/default-avatar.svg" : Model.ProfilePicture)"
-             width="32" height="32" class="rounded-circle me-2" style="object-fit:cover;" />
+        @if (Model.AuthorIsFriendOfViewer)
+        {
+            <a asp-controller="Friend" asp-action="Profile" asp-route-userId="@Model.UserId">
+                <img src="@(string.IsNullOrEmpty(Model.ProfilePicture) ? "/images/default-avatar.svg" : Model.ProfilePicture)"
+                     width="32" height="32" class="rounded-circle me-2" style="object-fit:cover;" />
+            </a>
+        }
+        else
+        {
+            <img src="@(string.IsNullOrEmpty(Model.ProfilePicture) ? "/images/default-avatar.svg" : Model.ProfilePicture)"
+                 width="32" height="32" class="rounded-circle me-2" style="object-fit:cover;" />
+        }
         <div class="flex-grow-1">
             <div class="bg-light rounded p-2">
                 @if (Model.AuthorIsFriendOfViewer)
                 {
-                    <strong>@Model.UserName</strong>
+                    <a asp-controller="Friend" asp-action="Profile" asp-route-userId="@Model.UserId" class="fw-bold text-decoration-none">@Model.UserName</a>
                 }
                 else
                 {

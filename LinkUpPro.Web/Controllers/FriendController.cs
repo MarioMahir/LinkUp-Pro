@@ -46,11 +46,23 @@ namespace LinkUpPro.Web.Controllers
 
             vm.TotalFriends = await _friendService.GetFriendsCountAsync(CurrentUserId);
             vm.TotalVisiblePosts = await _friendService.GetVisibleFriendsPostCountAsync(CurrentUserId);
+
+            vm.AllFriends = await _friendService.GetFriendsAsync(CurrentUserId);
             vm.Friends = await _friendService.GetFriendsAsync(CurrentUserId, vm.FriendSearchText);
 
             if (vm.DateFrom.HasValue && vm.DateTo.HasValue && vm.DateFrom > vm.DateTo)
             {
                 TempData["Error"] = "La fecha inicial no puede ser posterior a la fecha final.";
+                var allFeed = await _friendService.GetFriendsFeedAsync(CurrentUserId);
+                vm.Posts = _mapper.Map<List<PostViewModel>>(allFeed);
+                return View(vm);
+            }
+
+            if (!string.IsNullOrWhiteSpace(vm.FriendUserId)
+                && !vm.AllFriends.Any(f => f.UserId == vm.FriendUserId))
+            {
+                TempData["Error"] = "El usuario seleccionado ya no forma parte de su lista de amigos.";
+                vm.FriendUserId = null;
                 var allFeed = await _friendService.GetFriendsFeedAsync(CurrentUserId);
                 vm.Posts = _mapper.Map<List<PostViewModel>>(allFeed);
                 return View(vm);
@@ -147,7 +159,8 @@ namespace LinkUpPro.Web.Controllers
             var vm = new FriendRequestsViewModel
             {
                 Received = await _friendRequestService.GetPendingReceivedAsync(CurrentUserId),
-                Sent = await _friendRequestService.GetSentAsync(CurrentUserId)
+                Sent = await _friendRequestService.GetSentAsync(CurrentUserId),
+                ReceivedHistory = await _friendRequestService.GetReceivedHistoryAsync(CurrentUserId)
             };
 
             return View(vm);
@@ -296,6 +309,29 @@ namespace LinkUpPro.Web.Controllers
         public async Task<IActionResult> HideFromHistory(int id)
         {
             var result = await _friendRequestService.HideFromHistoryAsync(id, CurrentUserId);
+            TempData[result.Succeeded ? "Message" : "Error"] = result.Message;
+            return RedirectToAction("Requests");
+        }
+
+        [HttpGet]
+        public IActionResult HideFromReceiverHistoryConfirm(int id)
+        {
+            return View("Confirm", new ConfirmActionViewModel
+            {
+                Title = "Eliminar del historial",
+                Message = "¿Está seguro que desea eliminar esta solicitud de su historial?",
+                FormController = "Friend",
+                FormAction = "HideFromReceiverHistory",
+                HiddenFields = new Dictionary<string, string> { ["id"] = id.ToString() },
+                CancelUrl = Url.Action("Requests")!
+            });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> HideFromReceiverHistory(int id)
+        {
+            var result = await _friendRequestService.HideFromReceiverHistoryAsync(id, CurrentUserId);
             TempData[result.Succeeded ? "Message" : "Error"] = result.Message;
             return RedirectToAction("Requests");
         }

@@ -15,11 +15,11 @@
 
                     if (mode == "ships" && cell.HasShip)
                     {
-                        cssClass += " bs-ship";
+                        cssClass += cell.IsSunk ? " bs-ship bs-sunk" : " bs-ship";
                     }
                     else if (mode != "ships" && cell.IsAttacked)
                     {
-                        cssClass += cell.WasHit ? " bs-hit" : " bs-miss";
+                        cssClass += cell.IsSunk ? " bs-sunk" : (cell.WasHit ? " bs-hit" : " bs-miss");
                     }
 
                     <td class="@cssClass"></td>

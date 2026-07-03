@@ -85,6 +85,11 @@ namespace LinkUpPro.Application.Services
                 {
                     return Fail("La imagen no puede superar los 5 MB.");
                 }
+
+                if (!FileSignatureValidator.HasValidImageSignature(vm.ImageFile))
+                {
+                    return Fail("El archivo seleccionado no tiene un formato de imagen válido.");
+                }
             }
 
             if (vm.ContentType == "YouTube")
@@ -98,8 +103,6 @@ namespace LinkUpPro.Application.Services
 
             return null;
         }
-
-        // ----- Create / Edit / Delete -----
 
         public async Task<ServiceResult> CreateAsync(SavePostViewModel vm, string userId)
         {
@@ -219,8 +222,6 @@ namespace LinkUpPro.Application.Services
             return Ok("La publicación fue eliminada correctamente.");
         }
 
-        // ----- Visibility -----
-
         private async Task<bool> CanViewPostAsync(Post post, string viewerId)
         {
             if (post.UserId == viewerId)
@@ -258,8 +259,6 @@ namespace LinkUpPro.Application.Services
 
             return await ToDtoAsync(post, viewerId);
         }
-
-        // ----- Feeds -----
 
         private static List<Post> ApplyFilter(IEnumerable<Post> posts, PostFilterDto? filter)
         {
@@ -408,8 +407,6 @@ namespace LinkUpPro.Application.Services
             return result;
         }
 
-        // ----- Comments -----
-
         public async Task<ServiceResult> AddCommentAsync(
             int postId,
             string content,
@@ -529,8 +526,6 @@ namespace LinkUpPro.Application.Services
             return Ok("El comentario fue eliminado correctamente.");
         }
 
-        // ----- Reactions -----
-
         public async Task<ServiceResult> SetReactionAsync(int postId, string userId, bool isLike)
         {
             var post = await _postRepository.GetByIdWithDetailsAsync(postId);
@@ -547,6 +542,8 @@ namespace LinkUpPro.Application.Services
 
             var existing = await _reactionRepository.GetByUserAndPostAsync(userId, postId);
             var wasNew = existing == null;
+            var previousIsLike = existing?.IsLike;
+            var reactionChanged = existing != null && previousIsLike != isLike;
 
             if (existing != null)
             {
@@ -565,7 +562,7 @@ namespace LinkUpPro.Application.Services
 
             await _reactionRepository.SaveChangesAsync();
 
-            if (wasNew)
+            if (wasNew || reactionChanged)
             {
                 await _notificationService.CreateAsync(
                     post.UserId, userId, "Reaction", postId, null, isLike);
