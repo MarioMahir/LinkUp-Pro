@@ -64,6 +64,19 @@ body {
   background-color: #dc3545;
 }
 
+.bs-cell.bs-sunk {
+  background-color: #5c0611;
+  position: relative;
+}
+
+.bs-cell.bs-sunk::after {
+  content: "\2715";
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 28px;
+}
+
 .bs-cell.bs-miss {
   background-color: #198754;
 }

@@ -61,6 +61,32 @@ namespace LinkUpPro.Application.Services
             return board;
         }
 
+        // Marca como hundidas (IsSunk) las celdas de todo barco cuyas posiciones
+        // hayan sido impactadas en su totalidad.
+        private static void MarkSunkShips(
+            List<List<BoardCellDto>> board,
+            IEnumerable<Ship> ships,
+            HashSet<(int Row, int Col)> hitCells)
+        {
+            foreach (var ship in ships)
+            {
+                var occupied = ship.GetOccupiedCells().ToList();
+
+                if (occupied.Count == 0 || !occupied.All(hitCells.Contains))
+                {
+                    continue;
+                }
+
+                foreach (var (row, col) in occupied)
+                {
+                    if (row >= 0 && row < BoardSize && col >= 0 && col < BoardSize)
+                    {
+                        board[row][col].IsSunk = true;
+                    }
+                }
+            }
+        }
+
         private async Task CheckForfeitAsync(BattleshipGame game)
         {
             if (game.Status != "Attacking" || game.CurrentTurnUserId == null || game.TurnAssignedDate == null)
@@ -316,7 +342,9 @@ namespace LinkUpPro.Application.Services
                 return board;
             }
 
-            foreach (var ship in game.Ships.Where(s => s.OwnerId == userId))
+            var myShips = game.Ships.Where(s => s.OwnerId == userId).ToList();
+
+            foreach (var ship in myShips)
             {
                 foreach (var (row, col) in ship.GetOccupiedCells())
                 {
@@ -326,6 +354,14 @@ namespace LinkUpPro.Application.Services
                     }
                 }
             }
+
+            var opponentId = game.PlayerOneId == userId ? game.PlayerTwoId : game.PlayerOneId;
+            var opponentHitCells = game.Attacks
+                .Where(a => a.AttackerId == opponentId && a.WasHit)
+                .Select(a => (a.Row, a.Col))
+                .ToHashSet();
+
+            MarkSunkShips(board, myShips, opponentHitCells);
 
             return board;
         }
@@ -454,6 +490,15 @@ namespace LinkUpPro.Application.Services
                 }
             }
 
+            var opponentId = game.PlayerOneId == userId ? game.PlayerTwoId : game.PlayerOneId;
+            var opponentShips = game.Ships.Where(s => s.OwnerId == opponentId);
+            var myHitCells = game.Attacks
+                .Where(a => a.AttackerId == userId && a.WasHit)
+                .Select(a => (a.Row, a.Col))
+                .ToHashSet();
+
+            MarkSunkShips(board, opponentShips, myHitCells);
+
             return board;
         }
 
@@ -576,8 +621,11 @@ namespace LinkUpPro.Application.Services
                 opponentAttackBoard[a.Row][a.Col].WasHit = a.WasHit;
             }
 
+            var myShips = game.Ships.Where(s => s.OwnerId == userId).ToList();
+            var opponentShips = game.Ships.Where(s => s.OwnerId == opponentId).ToList();
+
             var myShipsBoard = CreateEmptyBoard();
-            foreach (var ship in game.Ships.Where(s => s.OwnerId == userId))
+            foreach (var ship in myShips)
             {
                 foreach (var (r, c) in ship.GetOccupiedCells())
                 {
@@ -587,6 +635,20 @@ namespace LinkUpPro.Application.Services
                     }
                 }
             }
+
+            var myHitCells = game.Attacks
+                .Where(a => a.AttackerId == userId && a.WasHit)
+                .Select(a => (a.Row, a.Col))
+                .ToHashSet();
+
+            var opponentHitCells = game.Attacks
+                .Where(a => a.AttackerId == opponentId && a.WasHit)
+                .Select(a => (a.Row, a.Col))
+                .ToHashSet();
+
+            MarkSunkShips(myAttackBoard, opponentShips, myHitCells);
+            MarkSunkShips(opponentAttackBoard, myShips, opponentHitCells);
+            MarkSunkShips(myShipsBoard, myShips, opponentHitCells);
 
             return new BattleshipResultDto
             {

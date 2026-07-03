@@ -228,6 +228,13 @@ Activar cuenta
                     user,
                     token);
 
+            if (result.Succeeded)
+            {
+                // Invalida el token utilizado (cambia el security stamp) para que
+                // el mismo enlace no pueda volver a usarse.
+                await _userManager.UpdateSecurityStampAsync(user);
+            }
+
             return new()
             {
                 Succeeded = result.Succeeded

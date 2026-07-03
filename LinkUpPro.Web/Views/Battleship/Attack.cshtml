@@ -20,7 +20,8 @@ else
                 {
                     if (cell.IsAttacked)
                     {
-                        <td class="bs-cell @(cell.WasHit ? "bs-hit" : "bs-miss")"></td>
+                        var attackedClass = cell.IsSunk ? "bs-sunk" : (cell.WasHit ? "bs-hit" : "bs-miss");
+                        <td class="bs-cell @attackedClass" title="@(cell.IsSunk ? "Barco hundido" : (cell.WasHit ? "Impacto" : "Agua"))"></td>
                     }
                     else if (Model.IsMyTurn)
                     {

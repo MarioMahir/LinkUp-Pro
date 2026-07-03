@@ -130,6 +130,11 @@ namespace LinkUpPro.Application.Services
                     return Fail("La imagen seleccionada no puede superar los 5 MB.");
                 }
 
+                if (!FileSignatureValidator.HasValidImageSignature(vm.ProfilePictureFile))
+                {
+                    return Fail("El archivo seleccionado no tiene un formato de imagen válido.");
+                }
+
                 newImagePath = await _fileStorageService.SaveAsync(vm.ProfilePictureFile, "users");
             }
 

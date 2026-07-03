@@ -25,5 +25,10 @@ namespace LinkUpPro.Application.ViewModels
         public int PendingRequestsCount { get; set; }
 
         public int UnreadNotificationsCount { get; set; }
+
+        // Indica si el usuario aplicó algún criterio de búsqueda/filtro, para
+        // poder distinguir "todavía no ha publicado nada" de "no hay resultados
+        // para este filtro" en la vista.
+        public bool HasFilter { get; set; }
     }
 }

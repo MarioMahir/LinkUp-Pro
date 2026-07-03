@@ -56,6 +56,8 @@ namespace LinkUpPro.Web.Controllers
                 || vm.DateTo.HasValue
                 || !string.IsNullOrWhiteSpace(vm.EditedStatus);
 
+            vm.HasFilter = hasFilter;
+
             if (vm.DateFrom.HasValue && vm.DateTo.HasValue && vm.DateFrom > vm.DateTo)
             {
                 TempData["Error"] = "La fecha inicial no puede ser posterior a la fecha final.";

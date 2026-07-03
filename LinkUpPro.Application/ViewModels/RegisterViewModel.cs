@@ -29,7 +29,7 @@ namespace LinkUpPro.Application.ViewModels
 
         [Required(ErrorMessage = "La imagen es requerida")]
         [DataType(DataType.Upload)]
-        [ValidateFile(maxFileSizeMb: 5, allowedExtensions: new[] { ".jpg", ".jpeg", ".png" })]
+        [ValidateFile(maxFileSizeMb: 5, allowedExtensions: new[] { ".jpg", ".jpeg", ".png", ".webp" })]
         public IFormFile ProfilePicture { get; set; }
 
         [Required(ErrorMessage = "El usuario es requerido")]

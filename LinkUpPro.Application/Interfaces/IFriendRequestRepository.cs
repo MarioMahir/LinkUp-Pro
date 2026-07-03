@@ -9,5 +9,7 @@ namespace LinkUpPro.Application.Interfaces
         Task<List<FriendRequest>> GetPendingReceivedAsync(string userId);
 
         Task<List<FriendRequest>> GetVisibleSentAsync(string userId);
+
+        Task<List<FriendRequest>> GetVisibleReceivedHistoryAsync(string userId);
     }
 }

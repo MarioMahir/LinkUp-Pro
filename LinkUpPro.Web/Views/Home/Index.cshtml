@@ -83,9 +83,13 @@
     </div>
 </div>
 
-@if (Model.Posts.Count == 0)
+@if (Model.Posts.Count == 0 && !Model.HasFilter)
 {
     <div class="alert alert-info">Todavía no ha realizado ninguna publicación.</div>
+}
+else if (Model.Posts.Count == 0 && Model.HasFilter)
+{
+    <!-- El mensaje "No se encontraron publicaciones..." ya se muestra mediante TempData["Error"]. -->
 }
 else
 {
@@ -101,10 +105,22 @@ else
         contentType.addEventListener("change", function () {
             var image = document.getElementById("imageSection");
             var youtube = document.getElementById("youtubeSection");
+            var imageInput = document.getElementById("NewPost_ImageFile");
+            var youtubeInput = document.getElementById("NewPost_YoutubeUrl");
+
             image.style.display = "none";
             youtube.style.display = "none";
-            if (this.value === "Image") image.style.display = "block";
-            if (this.value === "YouTube") youtube.style.display = "block";
+
+            if (this.value === "Image") {
+                image.style.display = "block";
+                if (youtubeInput) youtubeInput.value = "";
+            } else if (this.value === "YouTube") {
+                youtube.style.display = "block";
+                if (imageInput) imageInput.value = "";
+            } else {
+                if (imageInput) imageInput.value = "";
+                if (youtubeInput) youtubeInput.value = "";
+            }
         });
     }
 </script>

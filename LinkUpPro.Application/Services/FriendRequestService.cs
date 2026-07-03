@@ -101,6 +101,37 @@ namespace LinkUpPro.Application.Services
             return result;
         }
 
+        public async Task<List<FriendRequestDto>> GetReceivedHistoryAsync(string userId)
+        {
+            var requests = await _friendRequestRepository.GetVisibleReceivedHistoryAsync(userId);
+
+            var result = new List<FriendRequestDto>();
+
+            foreach (var r in requests)
+            {
+                if (r.Sender == null || !r.Sender.EmailConfirmed)
+                {
+                    continue;
+                }
+
+                result.Add(new FriendRequestDto
+                {
+                    Id = r.Id,
+                    OtherUserId = r.SenderId,
+                    OtherUserName = r.Sender.UserName ?? string.Empty,
+                    OtherFullName = $"{r.Sender.FirstName} {r.Sender.LastName}",
+                    OtherProfilePicture = r.Sender.ProfilePictureUrl,
+                    MutualFriendsCount = await _friendService.GetMutualFriendsCountAsync(userId, r.SenderId),
+                    Status = r.Status,
+                    SentDate = r.SentDate,
+                    RespondedDate = r.RespondedDate,
+                    IsSentByCurrentUser = false
+                });
+            }
+
+            return result;
+        }
+
         public async Task<int> GetPendingCountAsync(string userId)
         {
             var requests = await _friendRequestRepository.GetPendingReceivedAsync(userId);
@@ -307,6 +338,27 @@ namespace LinkUpPro.Application.Services
             }
 
             request.IsHiddenFromSender = true;
+            _friendRequestRepository.Update(request);
+            await _friendRequestRepository.SaveChangesAsync();
+
+            return Ok("La solicitud fue eliminada de su historial.");
+        }
+
+        public async Task<ServiceResult> HideFromReceiverHistoryAsync(int requestId, string currentUserId)
+        {
+            var request = await _friendRequestRepository.GetByIdAsync(requestId);
+
+            if (request == null || (request.Status != "Accepted" && request.Status != "Rejected"))
+            {
+                return Fail("Esta solicitud ya no se encuentra disponible.");
+            }
+
+            if (request.ReceiverId != currentUserId)
+            {
+                return Fail("No posee permisos para realizar esta acción sobre la solicitud.");
+            }
+
+            request.IsHiddenFromReceiver = true;
             _friendRequestRepository.Update(request);
             await _friendRequestRepository.SaveChangesAsync();
 
