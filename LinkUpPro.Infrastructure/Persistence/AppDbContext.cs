@@ -152,6 +152,10 @@ namespace LinkUpPro.Infrastructure.Persistence
                 .IsUnique()
                 .HasFilter("[Status] <> 'Finished'");
 
+            builder.Entity<BattleshipGame>()
+                .Property(g => g.RowVersion)
+                .IsRowVersion();
+
             builder.Entity<Ship>()
                 .HasOne(s => s.Game)
                 .WithMany(g => g.Ships)

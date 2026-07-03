@@ -1,10 +1,15 @@
 using LinkUpPro.Application.DTOs;
 using LinkUpPro.Application.Helpers;
+using LinkUpPro.Application.ViewModels;
 
 namespace LinkUpPro.Application.Interfaces
 {
     public interface IFriendService
     {
+        Task<FriendProfileViewModel?> GetFriendProfileAsync(string currentUserId, string targetUserId);
+
+        Task<string?> GetFriendUserNameAsync(string userId);
+
         Task<List<FriendDto>> GetFriendsAsync(string userId, string? search = null);
 
         Task<int> GetFriendsCountAsync(string userId);

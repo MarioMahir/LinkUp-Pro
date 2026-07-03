@@ -2,10 +2,9 @@ using AutoMapper;
 using LinkUpPro.Application.DTOs;
 using LinkUpPro.Application.Interfaces;
 using LinkUpPro.Application.ViewModels;
-using LinkUpPro.Core.Entities;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace LinkUpPro.Web.Controllers
 {
@@ -18,25 +17,21 @@ namespace LinkUpPro.Web.Controllers
 
         private readonly INotificationService _notificationService;
 
-        private readonly UserManager<ApplicationUser> _userManager;
-
         private readonly IMapper _mapper;
 
         public HomeController(
             IPostService postService,
             IFriendRequestService friendRequestService,
             INotificationService notificationService,
-            UserManager<ApplicationUser> userManager,
             IMapper mapper)
         {
             _postService = postService;
             _friendRequestService = friendRequestService;
             _notificationService = notificationService;
-            _userManager = userManager;
             _mapper = mapper;
         }
 
-        private string CurrentUserId => _userManager.GetUserId(User)!;
+        private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
         private async Task PopulateCountersAsync(HomeViewModel vm)
         {

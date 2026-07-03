@@ -32,6 +32,8 @@ namespace LinkUpPro.Core.Entities
 
         public DateTime? FinishedDate { get; set; }
 
+        public byte[] RowVersion { get; set; } = Array.Empty<byte>();
+
         public ICollection<Ship> Ships { get; set; } = new List<Ship>();
 
         public ICollection<Attack> Attacks { get; set; } = new List<Attack>();

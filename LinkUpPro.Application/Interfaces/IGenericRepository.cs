@@ -18,6 +18,8 @@ namespace LinkUpPro.Application.Interfaces
 
         void Remove(T entity);
 
+        Task ReloadAsync(T entity);
+
         Task SaveChangesAsync();
     }
 }

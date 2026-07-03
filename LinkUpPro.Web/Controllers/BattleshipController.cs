@@ -1,10 +1,9 @@
 using AutoMapper;
 using LinkUpPro.Application.Interfaces;
 using LinkUpPro.Application.ViewModels;
-using LinkUpPro.Core.Entities;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace LinkUpPro.Web.Controllers
 {
@@ -13,21 +12,17 @@ namespace LinkUpPro.Web.Controllers
     {
         private readonly IBattleshipService _battleshipService;
 
-        private readonly UserManager<ApplicationUser> _userManager;
-
         private readonly IMapper _mapper;
 
         public BattleshipController(
             IBattleshipService battleshipService,
-            UserManager<ApplicationUser> userManager,
             IMapper mapper)
         {
             _battleshipService = battleshipService;
-            _userManager = userManager;
             _mapper = mapper;
         }
 
-        private string CurrentUserId => _userManager.GetUserId(User)!;
+        private string CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
         private async Task<List<List<BoardCellViewModel>>> MapBoardAsync(Task<List<List<LinkUpPro.Application.DTOs.BoardCellDto>>> boardTask)
         {
@@ -176,6 +171,26 @@ namespace LinkUpPro.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> PlaceShip(int id, int length)
         {
+            var state = await _battleshipService.GetGameStateAsync(id, CurrentUserId);
+
+            if (state == null)
+            {
+                TempData["Error"] = "No posee permisos para acceder a esta partida.";
+                return RedirectToAction("Index");
+            }
+
+            if (state.Status != "SettingUp" || state.MyShipsReady)
+            {
+                return RedirectToAction("Play", new { id });
+            }
+
+            var remainingShips = await _battleshipService.GetRemainingShipsAsync(id, CurrentUserId);
+
+            if (!remainingShips.Any(s => s.Length == length))
+            {
+                return RedirectToAction("ShipSelection", new { id });
+            }
+
             var vm = new PlaceShipViewModel
             {
                 GameId = id,
@@ -194,8 +209,21 @@ namespace LinkUpPro.Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult SelectDirection(int id, int length, int row, int col)
+        public async Task<IActionResult> SelectDirection(int id, int length, int row, int col)
         {
+            var state = await _battleshipService.GetGameStateAsync(id, CurrentUserId);
+
+            if (state == null)
+            {
+                TempData["Error"] = "No posee permisos para acceder a esta partida.";
+                return RedirectToAction("Index");
+            }
+
+            if (state.Status != "SettingUp" || state.MyShipsReady)
+            {
+                return RedirectToAction("Play", new { id });
+            }
+
             var vm = new SelectDirectionViewModel
             {
                 GameId = id,
