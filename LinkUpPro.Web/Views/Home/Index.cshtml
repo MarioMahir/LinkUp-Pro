@@ -1,423 +1,125 @@
-﻿@model LinkUpPro.Application.ViewModels.HomeViewModel
+@model LinkUpPro.Application.ViewModels.HomeViewModel
 
-<div class="container mt-4">
-
-    <!-- Menú -->
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark rounded p-3">
-
-        <div class="container-fluid">
-
-            <a class="navbar-brand">
-                LinkUp Pro
-            </a>
-
-            <div class="navbar-nav">
-
-                <a class="nav-link active"
-                   asp-controller="Home"
-                   asp-action="Index">
-                    Home
-                </a>
-
-                <a class="nav-link">
-                    Amigos
-                </a>
-
-                <a class="nav-link">
-
-                    Solicitudes
-
-                    @if (Model.PendingRequestsCount > 0)
-                    {
-                        <span class="badge bg-danger">
-
-                            @Model.PendingRequestsCount
-
-                        </span>
-                    }
-
-                </a>
-
-                <a class="nav-link">
-
-                    Notificaciones
-
-                    @if (Model.UnreadNotificationsCount > 0)
-                    {
-                        <span class="badge bg-warning">
-
-                            @Model.UnreadNotificationsCount
-
-                        </span>
-                    }
-
-                </a>
-
-                <a class="nav-link">
-                    Battleship
-                </a>
-
-                <a class="nav-link">
-                    Mi perfil
-                </a>
-
-                <a class="nav-link text-danger"
-                   asp-controller="Account"
-                   asp-action="Logout">
-
-                    Cerrar sesión
-
-                </a>
-
+<div class="card mb-3">
+    <div class="card-header">Crear publicación</div>
+    <div class="card-body">
+        <form asp-controller="Home" asp-action="CreatePost" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <div class="mb-3">
+                <textarea asp-for="NewPost.Content" class="form-control" placeholder="¿Qué estás pensando?" maxlength="1000"></textarea>
             </div>
 
-        </div>
-
-    </nav>
-
-
-    <br />
-
-    <!-- Crear publicación -->
-
-    <div class="card">
-
-        <div class="card-header">
-
-            Crear publicación
-
-        </div>
-
-        <div class="card-body">
-
-            <form asp-controller="Home"
-                  asp-action="CreatePost"
-                  method="post"
-                  enctype="multipart/form-data">
-
-                <div class="mb-3">
-
-                    <textarea asp-for="NewPost.Content"
-                              class="form-control"
-                              placeholder="¿Qué estás pensando?">
-                    </textarea>
-
-                </div>
-
-                <div class="mb-3">
-
-                    <label>
-                        Tipo contenido
-                    </label>
-
-                    <select asp-for="NewPost.ContentType"
-                            id="contentType"
-                            class="form-select">
-
-                        <option value="">
-                            Seleccione
-                        </option>
-
-                        <option value="Image">
-                            Imagen
-                        </option>
-
-                        <option value="YouTube">
-                            Video YouTube
-                        </option>
-
-                    </select>
-
-                </div>
-
-                <div id="imageSection"
-                     style="display:none">
-
-                    <input asp-for="NewPost.ImageFile"
-                           class="form-control"
-                           type="file" />
-
-                </div>
-
-                <div id="youtubeSection"
-                     style="display:none">
-
-                    <input asp-for="NewPost.YoutubeUrl"
-                           class="form-control"
-                           placeholder="Enlace YouTube" />
-
-                </div>
-
-                <br />
-
-                <div>
-
-                    <select asp-for="NewPost.Privacy"
-                            class="form-select">
-
-                        <option value="Friends">
-                            Solo amigos
-                        </option>
-
-                        <option value="OnlyMe">
-                            Solo yo
-                        </option>
-
-                    </select>
-
-                </div>
-
-                <br />
-
-                <div class="form-check">
-
-                    <input asp-for="NewPost.AllowComments"
-                           class="form-check-input" />
-
-                    <label class="form-check-label">
-
-                        Permitir comentarios
-
-                    </label>
-
-                </div>
-
-                <br />
-
-                <button class="btn btn-primary">
-
-                    Publicar
-
-                </button>
-
-            </form>
-
-        </div>
-
-    </div>
-
-    <br />
-
-    <!-- Filtros -->
-
-    <div class="card">
-
-        <div class="card-header">
-
-            Buscar publicaciones
-
-        </div>
-
-        <div class="card-body">
-
-            <form method="get">
-
-                <div class="row">
-
-                    <div class="col">
-
-                        <input asp-for="SearchText"
-                               class="form-control"
-                               placeholder="Buscar" />
-
-                    </div>
-
-                    <div class="col">
-
-                        <select asp-for="ContentType"
-                                class="form-select">
-
-                            <option value="">
-                                Todos
-                            </option>
-
-                            <option value="Image">
-                                Imagen
-                            </option>
-
-                            <option value="YouTube">
-                                Video
-                            </option>
-
-                        </select>
-
-                    </div>
-
-                    <div class="col">
-
-                        <input asp-for="DateFrom"
-                               type="date"
-                               class="form-control" />
-
-                    </div>
-
-                    <div class="col">
-
-                        <input asp-for="DateTo"
-                               type="date"
-                               class="form-control" />
-
-                    </div>
-
-                </div>
-
-                <br />
-
-                <button class="btn btn-success">
-
-                    Buscar
-
-                </button>
-
-                <a asp-action="Index"
-                   class="btn btn-secondary">
-
-                    Limpiar
-
-                </a>
-
-            </form>
-
-        </div>
-
-    </div>
-
-    <br />
-
-    <!-- Publicaciones -->
-    @if (Model.Posts.Count == 0)
-    {
-        <div class="alert alert-info">
-
-            Todavía no ha realizado ninguna publicación.
-
-        </div>
-    }
-
-    else
-    {
-        @foreach (var post in Model.Posts)
-        {
-            <div class="card mb-3">
-
-                <div class="card-body">
-
-                    <div class="d-flex">
-
-                        <img src="@post.ProfilePicture"
-                             width="50"
-                             height="50"
-                             class="rounded-circle" />
-
-                        <div class="ms-3">
-
-                            <h5>
-
-                                @post.UserName
-
-                            </h5>
-
-                            <small>
-
-                                @post.CreatedDate
-
-                            </small>
-
-                            @if (post.IsEdited)
-                            {
-                                <span class="badge bg-warning">
-
-                                    Editada
-
-                                </span>
-                            }
-
-                        </div>
-
-                    </div>
-
-                    <hr />
-
-                    <p>
-
-                        @post.Content
-
-                    </p>
-
-                    @if (post.ImageUrl != null)
-                    {
-                        <img src="@post.ImageUrl"
-                             class="img-fluid rounded" />
-                    }
-
-                    @if (post.YoutubeUrl != null)
-                    {
-                        <iframe width="100%"
-                                height="315"
-                                src="@post.YoutubeUrl">
-                        </iframe>
-                    }
-
-                    <hr />
-
-                    <span>
-
-                        👍 @post.LikesCount
-
-                    </span>
-
-                    <span class="ms-3">
-
-                        👎 @post.DislikesCount
-
-                    </span>
-
-                </div>
-
+            <div class="mb-3">
+                <label class="form-label fw-bold">Tipo de contenido</label>
+                <select asp-for="NewPost.ContentType" id="contentType" class="form-select">
+                    <option value="">Seleccione</option>
+                    <option value="Image">Imagen</option>
+                    <option value="YouTube">Video de YouTube</option>
+                </select>
             </div>
-        }
-    }
 
+            <div id="imageSection" class="mb-3" style="display:none">
+                <label class="form-label fw-bold">Imagen</label>
+                <input asp-for="NewPost.ImageFile" class="form-control" type="file" accept=".jpg,.jpeg,.png,.webp" />
+            </div>
+
+            <div id="youtubeSection" class="mb-3" style="display:none">
+                <label class="form-label fw-bold">Enlace de YouTube</label>
+                <input asp-for="NewPost.YoutubeUrl" class="form-control" placeholder="https://www.youtube.com/watch?v=..." />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Privacidad</label>
+                <select asp-for="NewPost.Privacy" class="form-select">
+                    <option value="Friends">Solo amigos</option>
+                    <option value="OnlyMe">Solo yo</option>
+                </select>
+            </div>
+
+            <div class="form-check mb-3">
+                <input asp-for="NewPost.AllowComments" class="form-check-input" />
+                <label class="form-check-label">Permitir comentarios</label>
+            </div>
+
+            <button class="btn btn-primary">Publicar</button>
+        </form>
+    </div>
 </div>
 
+<div class="card mb-3">
+    <div class="card-header">Buscar publicaciones</div>
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-md-3">
+                <input asp-for="SearchText" class="form-control" placeholder="Buscar" />
+            </div>
+            <div class="col-md-2">
+                <select asp-for="ContentType" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="Image">Imagen</option>
+                    <option value="YouTube">Video de YouTube</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input asp-for="DateFrom" type="date" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <input asp-for="DateTo" type="date" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <select asp-for="EditedStatus" class="form-select">
+                    <option value="">Todas</option>
+                    <option value="Edited">Editadas</option>
+                    <option value="NotEdited">No editadas</option>
+                </select>
+            </div>
+            <div class="col-md-1 d-flex align-items-start">
+                <button class="btn btn-success me-1" type="submit">Buscar</button>
+            </div>
+            <div>
+                <a asp-action="Index" class="btn btn-secondary btn-sm">Limpiar filtros</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (Model.Posts.Count == 0 && !Model.HasFilter)
+{
+    <div class="alert alert-info">Todavía no ha realizado ninguna publicación.</div>
+}
+else if (Model.Posts.Count == 0 && Model.HasFilter)
+{
+}
+else
+{
+    foreach (var post in Model.Posts)
+    {
+        <partial name="_PostCard" model="post" />
+    }
+}
 
 <script>
+    var contentType = document.getElementById("contentType");
+    if (contentType) {
+        contentType.addEventListener("change", function () {
+            var image = document.getElementById("imageSection");
+            var youtube = document.getElementById("youtubeSection");
+            var imageInput = document.getElementById("NewPost_ImageFile");
+            var youtubeInput = document.getElementById("NewPost_YoutubeUrl");
 
-    let contentType=
-    document.getElementById(
-    "contentType");
+            image.style.display = "none";
+            youtube.style.display = "none";
 
-    contentType.addEventListener(
-    "change",
-    function(){
-
-    let image=
-    document.getElementById(
-    "imageSection");
-
-    let youtube=
-    document.getElementById(
-    "youtubeSection");
-
-    image.style.display=
-    "none";
-
-    youtube.style.display=
-    "none";
-
-    if(this.value==="Image")
-    {
-    image.style.display=
-    "block";
+            if (this.value === "Image") {
+                image.style.display = "block";
+                if (youtubeInput) youtubeInput.value = "";
+            } else if (this.value === "YouTube") {
+                youtube.style.display = "block";
+                if (imageInput) imageInput.value = "";
+            } else {
+                if (imageInput) imageInput.value = "";
+                if (youtubeInput) youtubeInput.value = "";
+            }
+        });
     }
-
-    if(this.value==="YouTube")
-    {
-    youtube.style.display=
-    "block";
-    }
-
-    });
-
 </script>

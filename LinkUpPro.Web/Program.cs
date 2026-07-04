@@ -1,22 +1,44 @@
 using LinkUpPro.Application.Interfaces;
+using LinkUpPro.Application.Mappings;
 using LinkUpPro.Application.Services;
 using LinkUpPro.Core.Entities;
 using LinkUpPro.Infrastructure.Persistence;
 using LinkUpPro.Infrastructure.Repositories;
-using LinkUpPro.Infrastructure.Services;
+using LinkUpPro.Shared.Services;
+using LinkUpPro.Web.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddAutoMapper(typeof(PostProfile).Assembly);
+
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped(typeof(IGenericService<>), typeof(GenericService<>));
+
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IFileStorageService, FileStorageService>();
+builder.Services.AddScoped<IProfileService, ProfileService>();
+builder.Services.AddScoped<IUserSessionService, UserSessionService>();
+builder.Services.AddScoped<ILinkBuilderService, LinkBuilderService>();
+
 builder.Services.AddScoped<IPostRepository, PostRepository>();
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
+builder.Services.AddScoped<IPostReactionRepository, PostReactionRepository>();
 builder.Services.AddScoped<IPostService, PostService>();
 
+builder.Services.AddScoped<IFriendshipRepository, FriendshipRepository>();
+builder.Services.AddScoped<IFriendRequestRepository, FriendRequestRepository>();
+builder.Services.AddScoped<IFriendService, FriendService>();
+builder.Services.AddScoped<IFriendRequestService, FriendRequestService>();
 
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+
+builder.Services.AddScoped<IBattleshipRepository, BattleshipRepository>();
+builder.Services.AddScoped<IBattleshipService, BattleshipService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseSqlServer(builder.Configuration
@@ -44,9 +66,21 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
     opt.SignIn.RequireConfirmedEmail = true;
 
     opt.User.RequireUniqueEmail = true;
+
+    opt.Tokens.EmailConfirmationTokenProvider = "EmailConfirmationTokenProvider";
+
+    opt.Tokens.PasswordResetTokenProvider = "PasswordResetTokenProvider";
 })
 .AddEntityFrameworkStores<AppDbContext>()
-.AddDefaultTokenProviders();
+.AddDefaultTokenProviders()
+.AddTokenProvider<EmailConfirmationTokenProvider<ApplicationUser>>("EmailConfirmationTokenProvider")
+.AddTokenProvider<PasswordResetTokenProvider<ApplicationUser>>("PasswordResetTokenProvider");
+
+builder.Services.Configure<EmailConfirmationTokenProviderOptions>(opt =>
+    opt.TokenLifespan = TimeSpan.FromHours(24));
+
+builder.Services.Configure<PasswordResetTokenProviderOptions>(opt =>
+    opt.TokenLifespan = TimeSpan.FromHours(1));
 
 builder.Services.ConfigureApplicationCookie(opt =>
 {
@@ -55,14 +89,26 @@ builder.Services.ConfigureApplicationCookie(opt =>
     opt.LogoutPath = "/Account/Logout";
 
     opt.AccessDeniedPath = "/Home/Error";
-    
+
     opt.ExpireTimeSpan = TimeSpan.FromMinutes(30);
 
     opt.SlidingExpiration = true;
 
+    opt.Cookie.HttpOnly = true;
+
+    opt.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+
+    opt.Cookie.SameSite = SameSiteMode.Lax;
+
     opt.Events.OnRedirectToLogin = context =>
     {
-        context.Response.Redirect("Account/Login?message=inactivity");
+        // Solo se considera "inactividad" si el navegador todavía envía la cookie
+        // de sesión (ticket expirado); un visitante anónimo va al login limpio.
+        var hadSession = context.Request.Cookies.ContainsKey(".AspNetCore.Identity.Application");
+
+        context.Response.Redirect(hadSession
+            ? "/Account/Login?message=inactivity"
+            : "/Account/Login");
 
         return Task.CompletedTask;
     };
@@ -71,11 +117,10 @@ builder.Services.ConfigureApplicationCookie(opt =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.UseExceptionHandler("/Home/Error");
+
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 

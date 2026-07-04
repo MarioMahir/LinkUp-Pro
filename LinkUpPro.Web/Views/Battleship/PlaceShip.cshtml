@@ -1,0 +1,47 @@
+@model LinkUpPro.Application.ViewModels.PlaceShipViewModel
+
+<h2>Posicionar barco de @Model.Length posiciones</h2>
+<p class="text-muted">Haga clic en la celda desde donde desea comenzar a posicionar el barco.</p>
+
+<form asp-action="SelectCell" method="post" id="selectCellForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="gameId" value="@Model.GameId" />
+    <input type="hidden" name="length" value="@Model.Length" />
+    <input type="hidden" name="row" id="selectedRow" />
+    <input type="hidden" name="col" id="selectedCol" />
+
+    <table class="battleship-grid">
+        <tbody>
+            @foreach (var row in Model.Board)
+            {
+                <tr>
+                    @foreach (var cell in row)
+                    {
+                        if (cell.HasShip)
+                        {
+                            <td class="bs-cell bs-ship bs-disabled"></td>
+                        }
+                        else
+                        {
+                            <td class="bs-cell bs-clickable" data-row="@cell.Row" data-col="@cell.Col" onclick="selectCell(this)"></td>
+                        }
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-primary mt-3" id="continueButton" disabled>Continuar</button>
+</form>
+
+<a asp-action="ShipSelection" asp-route-id="@Model.GameId" class="btn btn-secondary mt-3">Volver atrás</a>
+
+<script>
+    function selectCell(cell) {
+        document.querySelectorAll(".bs-cell.bs-selected").forEach(c => c.classList.remove("bs-selected"));
+        cell.classList.add("bs-selected");
+        document.getElementById("selectedRow").value = cell.dataset.row;
+        document.getElementById("selectedCol").value = cell.dataset.col;
+        document.getElementById("continueButton").disabled = false;
+    }
+</script>

@@ -29,3 +29,58 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+.battleship-grid {
+  border-collapse: collapse;
+  margin: 0 auto;
+}
+
+.bs-cell {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #ccc;
+  background-color: #f1f5f9;
+  padding: 0;
+  text-align: center;
+}
+
+.bs-cell.bs-clickable {
+  cursor: pointer;
+}
+
+.bs-cell.bs-clickable:hover {
+  background-color: #dbeafe;
+}
+
+.bs-cell.bs-ship {
+  background-color: #6c757d;
+}
+
+.bs-cell.bs-selected {
+  background-color: #0d6efd;
+}
+
+.bs-cell.bs-hit {
+  background-color: #dc3545;
+}
+
+.bs-cell.bs-sunk {
+  background-color: #5c0611;
+  position: relative;
+}
+
+.bs-cell.bs-sunk::after {
+  content: "\2715";
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  line-height: 28px;
+}
+
+.bs-cell.bs-miss {
+  background-color: #198754;
+}
+
+.bs-cell.bs-disabled {
+  cursor: not-allowed;
+}

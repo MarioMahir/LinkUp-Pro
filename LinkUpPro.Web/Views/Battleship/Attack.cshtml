@@ -1,0 +1,53 @@
+@model LinkUpPro.Application.ViewModels.BattleshipBoardViewModel
+
+<h2>Partida contra @Model.OpponentUserName</h2>
+
+@if (Model.IsMyTurn)
+{
+    <div class="alert alert-success">Es su turno de atacar. Haga clic en una celda del tablero.</div>
+}
+else
+{
+    <div class="alert alert-secondary">El oponente está atacando, debe esperar a que finalice su ataque para poder atacar.</div>
+}
+
+<table class="battleship-grid">
+    <tbody>
+        @foreach (var row in Model.Board)
+        {
+            <tr>
+                @foreach (var cell in row)
+                {
+                    if (cell.IsAttacked)
+                    {
+                        var attackedClass = cell.IsSunk ? "bs-sunk" : (cell.WasHit ? "bs-hit" : "bs-miss");
+                        <td class="bs-cell @attackedClass" title="@(cell.IsSunk ? "Barco hundido" : (cell.WasHit ? "Impacto" : "Agua"))"></td>
+                    }
+                    else if (Model.IsMyTurn)
+                    {
+                        <td class="bs-cell bs-clickable p-0">
+                            <form asp-action="Attack" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="gameId" value="@Model.GameId" />
+                                <input type="hidden" name="row" value="@cell.Row" />
+                                <input type="hidden" name="col" value="@cell.Col" />
+                                <button type="submit" style="width:28px;height:28px;border:none;background:transparent;"></button>
+                            </form>
+                        </td>
+                    }
+                    else
+                    {
+                        <td class="bs-cell bs-disabled"></td>
+                    }
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="mt-3">
+    <a asp-action="Play" asp-route-id="@Model.GameId" class="btn btn-outline-secondary">Refrescar pantalla</a>
+    <a asp-action="Index" class="btn btn-secondary">Volver atrás</a>
+    <a asp-action="MyBoard" asp-route-id="@Model.GameId" class="btn btn-outline-primary">Ver mi tablero</a>
+    <a asp-action="SurrenderConfirm" asp-route-id="@Model.GameId" class="btn btn-danger">Rendirse</a>
+</div>

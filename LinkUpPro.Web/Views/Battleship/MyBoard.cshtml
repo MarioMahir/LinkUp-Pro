@@ -1,0 +1,8 @@
+@model LinkUpPro.Application.ViewModels.BattleshipBoardViewModel
+
+<h2>Mi tablero &mdash; partida contra @Model.OpponentUserName</h2>
+
+@{ ViewData["Mode"] = "ships"; }
+<partial name="_BoardGrid" model="Model.Board" />
+
+<a asp-action="Play" asp-route-id="@Model.GameId" class="btn btn-secondary mt-3">Volver atrás</a>

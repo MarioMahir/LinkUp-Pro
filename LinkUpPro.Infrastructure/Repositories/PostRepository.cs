@@ -1,4 +1,4 @@
-﻿using LinkUpPro.Application.Interfaces;
+using LinkUpPro.Application.Interfaces;
 using LinkUpPro.Core.Entities;
 using LinkUpPro.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -6,21 +6,12 @@ using Microsoft.EntityFrameworkCore;
 namespace LinkUpPro.Infrastructure.Repositories
 {
     public class PostRepository
-        : IPostRepository
+        : GenericRepository<Post>, IPostRepository
     {
-        private readonly AppDbContext _context;
-
         public PostRepository(
             AppDbContext context)
+            : base(context)
         {
-            _context = context;
-        }
-
-        public async Task AddAsync(
-            Post post)
-        {
-            await _context.Posts
-                .AddAsync(post);
         }
 
         public async Task<List<Post>>
@@ -30,6 +21,7 @@ namespace LinkUpPro.Infrastructure.Repositories
             return await _context.Posts
                 .Include(x => x.User)
                 .Include(x => x.Reactions)
+                .Include(x => x.Comments)
                 .Where(x =>
                     x.UserId == userId &&
                     !x.IsDeleted)
@@ -38,10 +30,31 @@ namespace LinkUpPro.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task SaveChangesAsync()
+        public async Task<Post?> GetByIdWithDetailsAsync(int id)
         {
-            await _context
-                .SaveChangesAsync();
+            return await _context.Posts
+                .Include(x => x.User)
+                .Include(x => x.Reactions)
+                    .ThenInclude(r => r.User)
+                .Include(x => x.Comments)
+                    .ThenInclude(c => c.User)
+                .Include(x => x.Comments)
+                    .ThenInclude(c => c.Replies)
+                .FirstOrDefaultAsync(x => x.Id == id);
+        }
+
+        public async Task<List<Post>> GetVisibleByFriendAsync(string friendId)
+        {
+            return await _context.Posts
+                .Include(x => x.User)
+                .Include(x => x.Reactions)
+                .Include(x => x.Comments)
+                .Where(x =>
+                    x.UserId == friendId &&
+                    !x.IsDeleted &&
+                    x.Privacy == "Friends")
+                .OrderByDescending(x => x.CreatedDate)
+                .ToListAsync();
         }
     }
 }

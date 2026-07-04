@@ -1,0 +1,76 @@
+@model LinkUpPro.Application.ViewModels.BattleshipHomeViewModel
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Battleship</h2>
+    <a asp-action="NewGame" class="btn btn-primary">Iniciar nueva partida</a>
+</div>
+
+<h5>Partidas activas</h5>
+@if (Model.ActiveGames.Count == 0)
+{
+    <div class="alert alert-info">No tiene partidas activas.</div>
+}
+else
+{
+    foreach (var g in Model.ActiveGames)
+    {
+        <div class="card mb-2">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@g.OpponentUserName</strong>
+                    <div class="small text-muted">
+                        Iniciada: @g.StartedDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm") &middot; @g.HoursElapsed horas
+                        @if (g.Status == "Attacking")
+                        {
+                            <span> &middot; @(g.IsMyTurn ? "Es su turno de atacar" : "Esperando el ataque del oponente")</span>
+                        }
+                        else
+                        {
+                            <span> &middot; Configurando barcos</span>
+                        }
+                    </div>
+                </div>
+                <div>
+                    <a asp-action="Play" asp-route-id="@g.Id" class="btn btn-sm btn-primary">Entrar a la partida</a>
+                    <a asp-action="SurrenderConfirm" asp-route-id="@g.Id" class="btn btn-sm btn-outline-danger">Rendirse</a>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+<h5 class="mt-4">Historial de partidas</h5>
+<div class="row mb-3">
+    <div class="col-md-4"><div class="card text-center p-2"><strong>@Model.TotalGames</strong><div class="small text-muted">Jugadas</div></div></div>
+    <div class="col-md-4"><div class="card text-center p-2"><strong>@Model.WonGames</strong><div class="small text-muted">Ganadas</div></div></div>
+    <div class="col-md-4"><div class="card text-center p-2"><strong>@Model.LostGames</strong><div class="small text-muted">Perdidas</div></div></div>
+</div>
+
+@if (Model.History.Count == 0)
+{
+    <div class="alert alert-info">Todavía no tiene partidas finalizadas.</div>
+}
+else
+{
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Oponente</th><th>Inicio</th><th>Fin</th><th>Duración</th><th>Resultado</th><th>Ganador</th><th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var g in Model.History)
+            {
+                <tr>
+                    <td>@g.OpponentUserName</td>
+                    <td>@g.StartedDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@(g.FinishedDate?.ToLocalTime().ToString("dd/MM/yyyy HH:mm"))</td>
+                    <td>@g.HoursElapsed horas</td>
+                    <td>@(g.Won ? "Ganada" : "Perdida")</td>
+                    <td>@g.WinnerDisplay</td>
+                    <td><a asp-action="Result" asp-route-id="@g.Id" class="btn btn-sm btn-outline-primary">Ver resultado</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

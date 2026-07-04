@@ -1,9 +1,9 @@
-﻿using LinkUpPro.Application.Interfaces;
+using LinkUpPro.Application.Interfaces;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
 
-namespace LinkUpPro.Infrastructure.Services
+namespace LinkUpPro.Shared.Services
 {
 
     public class EmailService : IEmailService
@@ -41,7 +41,10 @@ namespace LinkUpPro.Infrastructure.Services
 
                 message.Body = bodyBuilder.ToMessageBody();
 
-                using var client = new SmtpClient();
+                using var client = new SmtpClient
+                {
+                    CheckCertificateRevocation = false
+                };
 
                 await client.ConnectAsync(
                     _settings.Host,

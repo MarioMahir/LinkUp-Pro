@@ -1,0 +1,102 @@
+@model LinkUpPro.Application.ViewModels.CommentViewModel
+
+@{
+    var allowComments = (bool)(ViewData["AllowComments"] ?? false);
+    var currentUserId = (string)(ViewData["CurrentUserId"] ?? "");
+    var returnUrl = (string)(ViewData["ReturnUrl"] ?? "");
+    var depth = (int)(ViewData["Depth"] ?? 0);
+}
+
+<div class="mt-2" style="margin-left:@(depth * 24)px;">
+    <div class="d-flex">
+        @if (Model.AuthorIsFriendOfViewer)
+        {
+            <a asp-controller="Friend" asp-action="Profile" asp-route-userId="@Model.UserId">
+                <img src="@(string.IsNullOrEmpty(Model.ProfilePicture) ? "/images/default-avatar.svg" : Model.ProfilePicture)"
+                     width="32" height="32" class="rounded-circle me-2" style="object-fit:cover;" />
+            </a>
+        }
+        else
+        {
+            <img src="@(string.IsNullOrEmpty(Model.ProfilePicture) ? "/images/default-avatar.svg" : Model.ProfilePicture)"
+                 width="32" height="32" class="rounded-circle me-2" style="object-fit:cover;" />
+        }
+        <div class="flex-grow-1">
+            <div class="bg-light rounded p-2">
+                @if (Model.AuthorIsFriendOfViewer)
+                {
+                    <a asp-controller="Friend" asp-action="Profile" asp-route-userId="@Model.UserId" class="fw-bold text-decoration-none">@Model.UserName</a>
+                }
+                else
+                {
+                    <strong>@Model.UserName</strong>
+                }
+                @if (Model.IsDeleted)
+                {
+                    <span class="text-muted fst-italic d-block">@Model.Content</span>
+                }
+                else
+                {
+                    <span class="d-block">@Model.Content</span>
+                }
+                @if (Model.IsEdited && !Model.IsDeleted)
+                {
+                    <span class="badge bg-secondary">Editado</span>
+                }
+            </div>
+            <div class="small text-muted mt-1">
+                @Model.CreatedDate.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+
+                @if (!Model.IsDeleted)
+                {
+                    if (allowComments)
+                    {
+                        <a href="#" class="ms-2 reply-toggle" data-target="reply-form-@Model.Id">Responder</a>
+                    }
+
+                    if (Model.UserId == currentUserId)
+                    {
+                        <a href="#" class="ms-2 edit-toggle" data-target="edit-form-@Model.Id">Editar</a>
+
+                        <a class="ms-2 text-danger" asp-controller="Home" asp-action="DeleteCommentConfirm"
+                           asp-route-commentId="@Model.Id" asp-route-returnUrl="@returnUrl">Eliminar</a>
+                    }
+                }
+            </div>
+
+            @if (Model.UserId == currentUserId && !Model.IsDeleted)
+            {
+                <form asp-controller="Home" asp-action="EditComment" method="post" class="mt-2 d-none" id="edit-form-@Model.Id">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="commentId" value="@Model.Id" />
+                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                    <div class="input-group input-group-sm">
+                        <input type="text" name="content" class="form-control" value="@Model.Content" maxlength="500" />
+                        <button class="btn btn-primary" type="submit">Guardar</button>
+                    </div>
+                </form>
+            }
+
+            @if (allowComments && !Model.IsDeleted)
+            {
+                <form asp-controller="Home" asp-action="AddComment" method="post" class="mt-2 d-none" id="reply-form-@Model.Id">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="postId" value="@Model.PostId" />
+                    <input type="hidden" name="parentCommentId" value="@Model.Id" />
+                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                    <div class="input-group input-group-sm">
+                        <input type="text" name="content" class="form-control" placeholder="Escriba una respuesta..." maxlength="500" />
+                        <button class="btn btn-primary" type="submit">Responder</button>
+                    </div>
+                </form>
+            }
+
+            @{ ViewData["Depth"] = depth + 1; }
+            @foreach (var reply in Model.Replies)
+            {
+                <partial name="_CommentThread" model="reply" />
+            }
+            @{ ViewData["Depth"] = depth; }
+        </div>
+    </div>
+</div>

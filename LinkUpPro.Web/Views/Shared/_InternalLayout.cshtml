@@ -1,142 +1,62 @@
-﻿<!DOCTYPE html>
-
-<html>
-
+<!DOCTYPE html>
+<html lang="es">
 <head>
-
-    <title>LinkUp Pro</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
-          rel="stylesheet" />
-
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(ViewData["Title"] != null ? ViewData["Title"] + " - LinkUp Pro" : "LinkUp Pro")</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-
 <body>
-
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container">
-
-            <a class="navbar-brand"
-               asp-controller="Home"
-               asp-action="Index">
-
-                LinkUp Pro
-
-            </a>
-
-            <ul class="navbar-nav">
-
-                <li class="nav-item">
-
-                    <a class="nav-link"
-                       asp-controller="Home"
-                       asp-action="Index">
-
-                        Home
-
-                    </a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a class="nav-link">
-
-                        Amigos
-
-                    </a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a class="nav-link">
-
-                        Solicitudes
-
-                        <span class="badge bg-danger">
-
-                            3
-
-                        </span>
-
-                    </a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a class="nav-link">
-
-                        Notificaciones
-
-                        <span class="badge bg-danger">
-
-                            5
-
-                        </span>
-
-                    </a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a class="nav-link">
-
-                        Battleship
-
-                    </a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <a class="nav-link">
-
-                        Mi perfil
-
-                    </a>
-
-                </li>
-
-                <li class="nav-item">
-
-                    <form method="post"
-                          asp-controller="Account"
-                          asp-action="Logout">
-
-                        @Html.AntiForgeryToken()
-
-                        <button class="btn btn-danger">
-
-                            Cerrar sesión
-
-                        </button>
-
-                    </form>
-
-                </li>
-
-            </ul>
-
+            <a class="navbar-brand" asp-controller="Home" asp-action="Index">LinkUp Pro</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Friend" asp-action="Index">Amigos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Friend" asp-action="Requests">
+                            Solicitudes de amistad
+                            @await Component.InvokeAsync("NavCounters", new { type = "requests" })
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Notification" asp-action="Index">
+                            Notificaciones
+                            @await Component.InvokeAsync("NavCounters", new { type = "notifications" })
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Battleship" asp-action="Index">Battleship</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Profile" asp-action="Index">Mi perfil</a>
+                    </li>
+                </ul>
+                <form method="post" asp-controller="Account" asp-action="Logout" class="d-flex">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-outline-light">Cerrar sesión</button>
+                </form>
+            </div>
         </div>
-
     </nav>
 
-    <div class="container mt-4">
-
+    <div class="container mb-5">
+        <partial name="_StatusMessages" />
         @RenderBody()
-
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-
-    @await RenderSectionAsync(
-    "Scripts",
-        required: false)
-
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
-
 </html>

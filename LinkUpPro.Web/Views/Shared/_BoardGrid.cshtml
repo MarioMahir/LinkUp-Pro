@@ -1,0 +1,30 @@
+@model List<List<LinkUpPro.Application.ViewModels.BoardCellViewModel>>
+
+@{
+    var mode = (string)(ViewData["Mode"] ?? "ships");
+}
+
+<table class="battleship-grid">
+    <tbody>
+        @foreach (var row in Model)
+        {
+            <tr>
+                @foreach (var cell in row)
+                {
+                    var cssClass = "bs-cell";
+
+                    if (mode == "ships" && cell.HasShip)
+                    {
+                        cssClass += cell.IsSunk ? " bs-ship bs-sunk" : " bs-ship";
+                    }
+                    else if (mode != "ships" && cell.IsAttacked)
+                    {
+                        cssClass += cell.IsSunk ? " bs-sunk" : (cell.WasHit ? " bs-hit" : " bs-miss");
+                    }
+
+                    <td class="@cssClass"></td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>

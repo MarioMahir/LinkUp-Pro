@@ -1,9 +1,7 @@
-﻿using LinkUpPro.Application.Helpers;
+using LinkUpPro.Application.Helpers;
 using LinkUpPro.Application.Interfaces;
 using LinkUpPro.Application.ViewModels;
 using LinkUpPro.Core.Entities;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 
 namespace LinkUpPro.Application.Services
@@ -12,23 +10,33 @@ namespace LinkUpPro.Application.Services
     {
         private readonly UserManager<ApplicationUser> _userManager;
 
-        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IUserSessionService _userSessionService;
 
         private readonly IEmailService _emailService;
 
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IFileStorageService _fileStorageService;
+
+        private readonly ILinkBuilderService _linkBuilderService;
 
         public AccountService(
             UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager,
+            IUserSessionService userSessionService,
             IEmailService emailService,
-            IHttpContextAccessor httpContextAccessor)
+            IFileStorageService fileStorageService,
+            ILinkBuilderService linkBuilderService)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
+            _userSessionService = userSessionService;
             _emailService = emailService;
-            _httpContextAccessor = httpContextAccessor;
+            _fileStorageService = fileStorageService;
+            _linkBuilderService = linkBuilderService;
         }
+
+        private const string GenericLoginError =
+            "El nombre de usuario o la contraseña son incorrectos.";
+
+        private const string LockedOutError =
+            "La cuenta se encuentra bloqueada temporalmente debido a varios intentos fallidos. Inténtelo nuevamente en 15 minutos o restablezca su contraseña.";
 
         public async Task<ServiceResult>
 LoginAsync(LoginViewModel vm)
@@ -37,18 +45,51 @@ LoginAsync(LoginViewModel vm)
                 await _userManager
                 .FindByNameAsync(vm.UserName);
 
-            // Usuario inexistente
             if (user == null)
             {
                 return new()
                 {
                     Succeeded = false,
-                    Message =
-                    "El nombre de usuario o la contraseña son incorrectos."
+                    Message = GenericLoginError
                 };
             }
 
-            // Cuenta inactiva
+            if (await _userManager.IsLockedOutAsync(user))
+            {
+                return new()
+                {
+                    Succeeded = false,
+                    Message = LockedOutError
+                };
+            }
+
+            var passwordCorrect =
+                await _userManager.CheckPasswordAsync(
+                    user,
+                    vm.Password);
+
+            if (!passwordCorrect)
+            {
+                await _userManager.AccessFailedAsync(user);
+
+                if (await _userManager.IsLockedOutAsync(user))
+                {
+                    return new()
+                    {
+                        Succeeded = false,
+                        Message = LockedOutError
+                    };
+                }
+
+                return new()
+                {
+                    Succeeded = false,
+                    Message = GenericLoginError
+                };
+            }
+
+            // La contraseña es correcta: informar del estado inactivo aquí no
+            // permite enumerar usuarios registrados.
             if (!user.EmailConfirmed)
             {
                 return new()
@@ -59,52 +100,9 @@ LoginAsync(LoginViewModel vm)
                 };
             }
 
-            // Cuenta bloqueada
-            if (await _userManager.IsLockedOutAsync(user))
-            {
-                return new()
-                {
-                    Succeeded = false,
-                    Message =
-                    "La cuenta se encuentra bloqueada temporalmente debido a varios intentos fallidos. Inténtelo nuevamente en 15 minutos o restablezca su contraseña."
-                };
-            }
-
-            // Validar contraseña manualmente
-            var passwordCorrect =
-                await _userManager.CheckPasswordAsync(
-                    user,
-                    vm.Password);
-
-            if (!passwordCorrect)
-            {
-                // Incrementa intentos fallidos
-                await _userManager.AccessFailedAsync(user);
-
-                // Verifica si se bloqueó
-                if (await _userManager.IsLockedOutAsync(user))
-                {
-                    return new()
-                    {
-                        Succeeded = false,
-                        Message =
-                        "La cuenta se encuentra bloqueada temporalmente debido a varios intentos fallidos. Inténtelo nuevamente en 15 minutos o restablezca su contraseña."
-                    };
-                }
-
-                return new()
-                {
-                    Succeeded = false,
-                    Message =
-                    "El nombre de usuario o la contraseña son incorrectos."
-                };
-            }
-
-            // Reinicia intentos fallidos
             await _userManager.ResetAccessFailedCountAsync(user);
 
-            // Login real
-            await _signInManager.SignInAsync(
+            await _userSessionService.SignInAsync(
                 user,
                 vm.RememberMe);
 
@@ -114,35 +112,9 @@ LoginAsync(LoginViewModel vm)
             };
         }
 
-        private async Task<string> SaveFile(IFormFile file)
-        {
-            string fileName =
-                Guid.NewGuid()
-                + Path.GetExtension(file.FileName);
-
-            string path =
-                Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "wwwroot/images/users",
-                    fileName);
-
-            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-
-            using (var stream =
-                new FileStream(
-                    path,
-                    FileMode.Create))
-            {
-
-                await file.CopyToAsync(stream);
-            }
-
-            return $"/images/users/{fileName}";
-        }
-
         public async Task<ServiceResult> RegisterAsync(RegisterViewModel vm)
         {
-            string imagePath = await SaveFile(vm.ProfilePicture);
+            string imagePath = await _fileStorageService.SaveAsync(vm.ProfilePicture, "users");
 
             var user = new ApplicationUser
             {
@@ -151,7 +123,8 @@ LoginAsync(LoginViewModel vm)
                 UserName = vm.UserName,
                 Email = vm.Email,
                 PhoneNumber = vm.PhoneNumber,
-                ProfilePictureUrl = imagePath
+                ProfilePictureUrl = imagePath,
+                LastActivationRequestDate = DateTime.UtcNow
             };
 
             var result =
@@ -175,16 +148,9 @@ LoginAsync(LoginViewModel vm)
                 .GenerateEmailConfirmationTokenAsync(
                     user);
 
-            var request =
-                _httpContextAccessor
-                .HttpContext
-                .Request;
-
-            var baseUrl =
-                $"{request.Scheme}://{request.Host}";
-
             var link =
-                $"{baseUrl}/Account/ActivateAccount?userId={user.Id}&token={Uri.EscapeDataString(token)}";
+                _linkBuilderService.BuildAbsoluteUrl(
+                    $"/Account/ActivateAccount?userId={user.Id}&token={Uri.EscapeDataString(token)}");
 
             await _emailService.SendEmailAsync(
                 user.Email,
@@ -244,6 +210,11 @@ Activar cuenta
                     user,
                     token);
 
+            if (result.Succeeded)
+            {
+                await _userManager.UpdateSecurityStampAsync(user);
+            }
+
             return new()
             {
                 Succeeded = result.Succeeded
@@ -266,16 +237,9 @@ Activar cuenta
                     .GeneratePasswordResetTokenAsync(
                         user);
 
-                var request =
-                    _httpContextAccessor
-                    .HttpContext
-                    .Request;
-
-                var baseUrl =
-                    $"{request.Scheme}://{request.Host}";
-
                 var link =
-$"{baseUrl}/Account/ResetPassword?userId={user.Id}&token={Uri.EscapeDataString(token)}";
+                    _linkBuilderService.BuildAbsoluteUrl(
+                        $"/Account/ResetPassword?userId={user.Id}&token={Uri.EscapeDataString(token)}");
 
                 await _emailService
                     .SendEmailAsync(
@@ -358,7 +322,7 @@ Restablecer contraseña
 
         public async Task LogoutAsync()
         {
-            await _signInManager
+            await _userSessionService
                 .SignOutAsync();
         }
 
@@ -400,14 +364,9 @@ ResendActivationViewModel vm)
             .GenerateEmailConfirmationTokenAsync(
             user);
 
-            var request =
-            _httpContextAccessor.HttpContext.Request;
-
-            var baseUrl =
-            $"{request.Scheme}://{request.Host}";
-
             var link =
-            $"{baseUrl}/Account/ActivateAccount?userId={user.Id}&token={Uri.EscapeDataString(token)}";
+            _linkBuilderService.BuildAbsoluteUrl(
+            $"/Account/ActivateAccount?userId={user.Id}&token={Uri.EscapeDataString(token)}");
 
             await _emailService
             .SendEmailAsync(

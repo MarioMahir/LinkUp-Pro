@@ -15,10 +15,9 @@ namespace LinkUpPro.Web.Controllers
             _accountService = accountService;
         }
 
-        // LOGIN
-
+        [AllowAnonymous]
         [HttpGet]
-        public IActionResult Login(string message)
+        public IActionResult Login(string? message)
         {
             if (message == "inactivity")
             {
@@ -33,6 +32,7 @@ namespace LinkUpPro.Web.Controllers
             return View();
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult>
@@ -59,8 +59,7 @@ namespace LinkUpPro.Web.Controllers
                 "Home");
         }
 
-        // REGISTER
-
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult Register()
         {
@@ -74,6 +73,7 @@ namespace LinkUpPro.Web.Controllers
             return View();
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult>
@@ -104,8 +104,7 @@ namespace LinkUpPro.Web.Controllers
                 "Login");
         }
 
-        // ACTIVAR CUENTA
-
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult>
         ActivateAccount(
@@ -144,8 +143,7 @@ namespace LinkUpPro.Web.Controllers
                 "Login");
         }
 
-        // FORGOT PASSWORD
-
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult ForgotPassword()
         {
@@ -159,6 +157,7 @@ namespace LinkUpPro.Web.Controllers
             return View();
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult>
@@ -179,8 +178,7 @@ namespace LinkUpPro.Web.Controllers
                 "Login");
         }
 
-        // RESET PASSWORD
-
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult
         ResetPassword(
@@ -202,6 +200,7 @@ namespace LinkUpPro.Web.Controllers
                 });
         }
 
+        [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult>
@@ -231,8 +230,6 @@ namespace LinkUpPro.Web.Controllers
                 "Login");
         }
 
-        // LOGOUT
-
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -246,6 +243,7 @@ namespace LinkUpPro.Web.Controllers
                 "Login");
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public IActionResult
 ResendActivation()
@@ -253,7 +251,9 @@ ResendActivation()
             return View();
         }
 
+        [AllowAnonymous]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult>
         ResendActivation(
         ResendActivationViewModel vm)

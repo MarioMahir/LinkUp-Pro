@@ -1,0 +1,78 @@
+@model LinkUpPro.Application.ViewModels.SavePostViewModel
+
+<h2>Editar publicación</h2>
+
+<div class="card p-4">
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+    <form asp-controller="Home" asp-action="Edit" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="CurrentImageUrl" />
+
+        <div class="mb-3">
+            <textarea asp-for="Content" class="form-control" maxlength="1000"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Tipo de contenido</label>
+            <select asp-for="ContentType" id="contentType" class="form-select">
+                <option value="Image">Imagen</option>
+                <option value="YouTube">Video de YouTube</option>
+            </select>
+        </div>
+
+        <div id="imageSection" class="mb-3">
+            @if (!string.IsNullOrEmpty(Model.CurrentImageUrl))
+            {
+                <img src="@Model.CurrentImageUrl" class="img-fluid rounded mb-2" style="max-height:200px;" />
+            }
+            <input asp-for="ImageFile" class="form-control" type="file" accept=".jpg,.jpeg,.png,.webp" />
+        </div>
+
+        <div id="youtubeSection" class="mb-3">
+            <input asp-for="YoutubeUrl" class="form-control" placeholder="https://www.youtube.com/watch?v=..." />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Privacidad</label>
+            <select asp-for="Privacy" class="form-select">
+                <option value="Friends">Solo amigos</option>
+                <option value="OnlyMe">Solo yo</option>
+            </select>
+        </div>
+
+        <div class="form-check mb-3">
+            <input asp-for="AllowComments" class="form-check-input" />
+            <label class="form-check-label">Permitir comentarios</label>
+        </div>
+
+        <a asp-action="Index" class="btn btn-secondary">Volver atrás</a>
+        <button class="btn btn-primary">Guardar cambios</button>
+    </form>
+</div>
+
+<script>
+    var contentType = document.getElementById("contentType");
+    var image = document.getElementById("imageSection");
+    var youtube = document.getElementById("youtubeSection");
+    var imageInput = document.getElementById("ImageFile");
+    var youtubeInput = document.getElementById("YoutubeUrl");
+
+    function toggleSections() {
+        image.style.display = contentType.value === "Image" ? "block" : "none";
+        youtube.style.display = contentType.value === "YouTube" ? "block" : "none";
+    }
+
+    function onContentTypeChanged() {
+        toggleSections();
+        if (contentType.value === "Image") {
+            if (youtubeInput) youtubeInput.value = "";
+        } else if (contentType.value === "YouTube") {
+            if (imageInput) imageInput.value = "";
+        }
+    }
+
+    contentType.addEventListener("change", onContentTypeChanged);
+    toggleSections();
+</script>
