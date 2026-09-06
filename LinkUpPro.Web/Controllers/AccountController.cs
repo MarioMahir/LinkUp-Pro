@@ -1,4 +1,4 @@
-﻿using LinkUpPro.Application.Interfaces;
+using LinkUpPro.Application.Interfaces;
 using LinkUpPro.Application.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,6 +22,10 @@ namespace LinkUpPro.Web.Controllers
             if (message == "inactivity")
             {
                 TempData["Error"] = "Su sesión finalizó por inactividad. Inicie sesión nuevamente.";
+            }
+            else if (message == "login")
+            {
+                TempData["Error"] = "Debe iniciar sesión para acceder a esta sección.";
             }
 
             if (User.Identity.IsAuthenticated)

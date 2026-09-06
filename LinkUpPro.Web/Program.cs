@@ -108,7 +108,7 @@ builder.Services.ConfigureApplicationCookie(opt =>
 
         context.Response.Redirect(hadSession
             ? "/Account/Login?message=inactivity"
-            : "/Account/Login");
+            : "/Account/Login?message=login");
 
         return Task.CompletedTask;
     };
