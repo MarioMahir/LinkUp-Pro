@@ -1,4 +1,4 @@
-using LinkUpPro.Application.Helpers;
+﻿using LinkUpPro.Application.Helpers;
 using LinkUpPro.Application.Interfaces;
 using LinkUpPro.Application.ViewModels;
 using LinkUpPro.Core.Entities;
@@ -114,6 +114,17 @@ LoginAsync(LoginViewModel vm)
 
         public async Task<ServiceResult> RegisterAsync(RegisterViewModel vm)
         {
+            // Unicidad sin distinguir mayúsculas (Identity normaliza a mayúsculas)
+            if (await _userManager.FindByNameAsync(vm.UserName.Trim()) != null)
+            {
+                return new() { Succeeded = false, Message = "Este nombre de usuario ya se encuentra registrado." };
+            }
+
+            if (await _userManager.FindByEmailAsync(vm.Email.Trim()) != null)
+            {
+                return new() { Succeeded = false, Message = "Este correo electrónico ya se encuentra registrado." };
+            }
+
             string imagePath = await _fileStorageService.SaveAsync(vm.ProfilePicture, "users");
 
             var user = new ApplicationUser
