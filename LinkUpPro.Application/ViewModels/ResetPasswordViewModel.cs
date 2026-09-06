@@ -9,9 +9,9 @@ namespace LinkUpPro.Application.ViewModels
 {
     public class ResetPasswordViewModel
     {
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
-        public string Token { get; set; }
+        public string Token { get; set; } = string.Empty;
 
         [Required( ErrorMessage = "La nueva contraseña es requerida" )]
 
@@ -20,7 +20,7 @@ namespace LinkUpPro.Application.ViewModels
         [RegularExpression(
         @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$",
         ErrorMessage = "Debe tener mayúscula, minúscula, número y carácter especial")]
-        public string NewPassword { get; set; }
+        public string NewPassword { get; set; } = string.Empty;
 
         [Required]
 
@@ -28,6 +28,6 @@ namespace LinkUpPro.Application.ViewModels
 
         [DataType(DataType.Password)]
 
-        public string ConfirmPassword { get; set; }
+        public string ConfirmPassword { get; set; } = string.Empty;
     }
 }

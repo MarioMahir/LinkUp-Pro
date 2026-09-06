@@ -11,15 +11,15 @@ namespace LinkUpPro.Core.Entities
     {
         public int Id { get; set; }
 
-        public string Content { get; set; }
+        public string Content { get; set; } = string.Empty;
 
-        public string ContentType { get; set; }
+        public string ContentType { get; set; } = string.Empty;
 
         public string? ImageUrl { get; set; }
 
         public string? YoutubeUrl { get; set; }
 
-        public string Privacy { get; set; }
+        public string Privacy { get; set; } = string.Empty;
 
         public bool AllowComments { get; set; }
 
@@ -32,13 +32,13 @@ namespace LinkUpPro.Core.Entities
 
         public DateTime? UpdatedDate { get; set; }
 
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
-        public ApplicationUser User { get; set; }
+        public ApplicationUser User { get; set; } = null!;
 
-        public ICollection<Comment> Comments { get; set; }
+        public ICollection<Comment> Comments { get; set; } = new List<Comment>();
 
-        public ICollection<PostReaction> Reactions { get; set; }
+        public ICollection<PostReaction> Reactions { get; set; } = new List<PostReaction>();
     }
 
 }

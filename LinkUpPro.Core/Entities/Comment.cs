@@ -10,7 +10,7 @@ namespace LinkUpPro.Core.Entities
     {
         public int Id { get; set; }
 
-        public string Content { get; set; }
+        public string Content { get; set; } = string.Empty;
 
         public bool IsEdited { get; set; }
 
@@ -20,15 +20,15 @@ namespace LinkUpPro.Core.Entities
 
         public int PostId { get; set; }
 
-        public Post Post { get; set; }
+        public Post Post { get; set; } = null!;
 
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
-        public ApplicationUser User { get; set; }
+        public ApplicationUser User { get; set; } = null!;
 
         public int? ParentCommentId { get; set; }
 
-        public Comment ParentComment { get; set; }
+        public Comment ParentComment { get; set; } = null!;
 
         public ICollection<Comment>? Replies { get; set; }
     }

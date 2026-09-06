@@ -4,21 +4,21 @@ namespace LinkUpPro.Core.Entities
     {
         public int Id { get; set; }
 
-        public string RecipientId { get; set; }
+        public string RecipientId { get; set; } = string.Empty;
 
-        public ApplicationUser Recipient { get; set; }
+        public ApplicationUser Recipient { get; set; } = null!;
 
-        public string ActorId { get; set; }
+        public string ActorId { get; set; } = string.Empty;
 
-        public ApplicationUser Actor { get; set; }
+        public ApplicationUser Actor { get; set; } = null!;
 
-        public string Type { get; set; }
+        public string Type { get; set; } = string.Empty;
 
         public bool? ReactionIsLike { get; set; }
 
         public int PostId { get; set; }
 
-        public Post Post { get; set; }
+        public Post Post { get; set; } = null!;
 
         public int? CommentId { get; set; }
 

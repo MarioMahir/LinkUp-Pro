@@ -6,9 +6,9 @@ namespace LinkUpPro.Core.Entities
 
         public int GameId { get; set; }
 
-        public BattleshipGame Game { get; set; }
+        public BattleshipGame Game { get; set; } = null!;
 
-        public string AttackerId { get; set; }
+        public string AttackerId { get; set; } = string.Empty;
 
         public int Row { get; set; }
 

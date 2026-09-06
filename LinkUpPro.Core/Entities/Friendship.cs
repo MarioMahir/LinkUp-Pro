@@ -4,13 +4,13 @@ namespace LinkUpPro.Core.Entities
     {
         public int Id { get; set; }
 
-        public string UserOneId { get; set; }
+        public string UserOneId { get; set; } = string.Empty;
 
-        public ApplicationUser UserOne { get; set; }
+        public ApplicationUser UserOne { get; set; } = null!;
 
-        public string UserTwoId { get; set; }
+        public string UserTwoId { get; set; } = string.Empty;
 
-        public ApplicationUser UserTwo { get; set; }
+        public ApplicationUser UserTwo { get; set; } = null!;
 
         public bool IsActive { get; set; } = true;
 

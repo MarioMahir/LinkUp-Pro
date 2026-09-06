@@ -4,13 +4,13 @@ namespace LinkUpPro.Core.Entities
     {
         public int Id { get; set; }
 
-        public string PlayerOneId { get; set; }
+        public string PlayerOneId { get; set; } = string.Empty;
 
-        public ApplicationUser PlayerOne { get; set; }
+        public ApplicationUser PlayerOne { get; set; } = null!;
 
-        public string PlayerTwoId { get; set; }
+        public string PlayerTwoId { get; set; } = string.Empty;
 
-        public ApplicationUser PlayerTwo { get; set; }
+        public ApplicationUser PlayerTwo { get; set; } = null!;
 
         public string Status { get; set; } = "SettingUp";
 

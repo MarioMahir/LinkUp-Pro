@@ -14,10 +14,10 @@ namespace LinkUpPro.Application.ViewModels
             1000,
             ErrorMessage =
             "Máximo 1000 caracteres.")]
-        public string Content { get; set; }
+        public string Content { get; set; } = string.Empty;
 
         [Required]
-        public string ContentType { get; set; }
+        public string ContentType { get; set; } = string.Empty;
 
         public IFormFile? ImageFile { get; set; }
 
@@ -26,7 +26,7 @@ namespace LinkUpPro.Application.ViewModels
         public string? YoutubeUrl { get; set; }
 
         [Required]
-        public string Privacy { get; set; }
+        public string Privacy { get; set; } = string.Empty;
 
         public bool AllowComments { get; set; } = true;
     }

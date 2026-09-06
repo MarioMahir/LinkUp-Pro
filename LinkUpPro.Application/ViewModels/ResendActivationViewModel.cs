@@ -10,6 +10,6 @@ namespace LinkUpPro.Application.ViewModels
     public class ResendActivationViewModel
     {
         [Required]
-        public string UserName { get; set; }
+        public string UserName { get; set; } = string.Empty;
     }
 }

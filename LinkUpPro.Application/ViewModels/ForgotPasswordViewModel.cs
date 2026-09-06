@@ -10,6 +10,6 @@ namespace LinkUpPro.Application.ViewModels
     public class ForgotPasswordViewModel
     {
         [Required(ErrorMessage = "El nombre de usuario es requerido" )]
-        public string UserName { get; set; }
+        public string UserName { get; set; } = string.Empty;
     }
 }

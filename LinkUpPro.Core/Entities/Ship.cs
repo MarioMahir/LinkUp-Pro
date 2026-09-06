@@ -6,9 +6,9 @@ namespace LinkUpPro.Core.Entities
 
         public int GameId { get; set; }
 
-        public BattleshipGame Game { get; set; }
+        public BattleshipGame Game { get; set; } = null!;
 
-        public string OwnerId { get; set; }
+        public string OwnerId { get; set; } = string.Empty;
 
         public int Length { get; set; }
 
@@ -16,7 +16,7 @@ namespace LinkUpPro.Core.Entities
 
         public int StartCol { get; set; }
 
-        public string Direction { get; set; }
+        public string Direction { get; set; } = string.Empty;
 
         public IEnumerable<(int Row, int Col)> GetOccupiedCells()
         {

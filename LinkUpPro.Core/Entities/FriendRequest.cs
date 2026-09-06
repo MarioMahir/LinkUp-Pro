@@ -4,13 +4,13 @@ namespace LinkUpPro.Core.Entities
     {
         public int Id { get; set; }
 
-        public string SenderId { get; set; }
+        public string SenderId { get; set; } = string.Empty;
 
-        public ApplicationUser Sender { get; set; }
+        public ApplicationUser Sender { get; set; } = null!;
 
-        public string ReceiverId { get; set; }
+        public string ReceiverId { get; set; } = string.Empty;
 
-        public ApplicationUser Receiver { get; set; }
+        public ApplicationUser Receiver { get; set; } = null!;
 
         public string Status { get; set; } = "Pending";
 
